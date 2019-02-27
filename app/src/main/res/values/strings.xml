@@ -2,10 +2,14 @@
     <string name="app_name">Do Something</string>
     <string name="login">Login</string>
     <string name="signUp">Sign Up</string>
-    <string name="hint_Username">Username</string>
+    <string name="hint_username">Username</string>
     <string name="hint_password">Password</string>
     <string name="title_activity_events">Map</string>
     <string name="search_radius">Search Radius(Miles)</string>
     <string name="back">Back</string>
     <string name="title_activity_login_">Login_Activity</string>
+    <string name="fName">First Name</string>
+    <string name="lName">Last Name</string>
+    <string name="email">Email</string>
+
 </resources>
