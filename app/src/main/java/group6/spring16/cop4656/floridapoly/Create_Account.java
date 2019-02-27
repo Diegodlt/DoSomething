@@ -70,11 +70,12 @@ public class Create_Account extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if(task.isSuccessful()){
                             Log.d("User", "createUserWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
+                            Toast.makeText(Create_Account.this, "Account Creation Success",
+                                    Toast.LENGTH_LONG).show();
                         }else{
                             // If sign in fails, display a message to the user.
                             Log.w("User", "createUserWithEmail:failure", task.getException());
-                            Toast.makeText(Create_Account.this, "Authentication failed.",
+                            Toast.makeText(Create_Account.this, "Account Creation Failed",
                                     Toast.LENGTH_SHORT).show();
                         }
                     }
