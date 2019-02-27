@@ -26,14 +26,12 @@ import cz.msebera.android.httpclient.Header;
 public class Login_Activity extends AppCompatActivity {
 
     Button loginButton;
-    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        mAuth = FirebaseAuth.getInstance();
         loginButton = (Button)findViewById(R.id.loginButton);
 
         loginButton.setOnClickListener(new View.OnClickListener(){
@@ -41,21 +39,6 @@ public class Login_Activity extends AppCompatActivity {
             public void onClick(View view){
 //                Intent mapIntent = new Intent(Login_Activity.this, EventsActivity.class);
 //                startActivity(mapIntent);
-            mAuth.createUserWithEmailAndPassword("diego@test.com", "password")
-                .addOnCompleteListener(Login_Activity.this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if(task.isSuccessful()){
-                            Log.d("User", "createUserWithEmail:success");
-                            FirebaseUser user = mAuth.getCurrentUser();
-                        }else{
-                            // If sign in fails, display a message to the user.
-                            Log.w("User", "createUserWithEmail:failure", task.getException());
-                            Toast.makeText(Login_Activity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                });
             }
         });
 
