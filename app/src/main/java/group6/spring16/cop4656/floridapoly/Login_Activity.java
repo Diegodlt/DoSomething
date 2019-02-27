@@ -1,13 +1,20 @@
 package group6.spring16.cop4656.floridapoly;
 
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
@@ -18,17 +25,15 @@ import cz.msebera.android.httpclient.Header;
 
 public class Login_Activity extends AppCompatActivity {
 
-    // URL for server
-    final String url = "https://apis-diegodltl.c9users.io/";
     Button loginButton;
-
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        getMessage();
+        mAuth = FirebaseAuth.getInstance();
         loginButton = (Button)findViewById(R.id.loginButton);
 
         loginButton.setOnClickListener(new View.OnClickListener(){
@@ -36,27 +41,24 @@ public class Login_Activity extends AppCompatActivity {
             public void onClick(View view){
 //                Intent mapIntent = new Intent(Login_Activity.this, EventsActivity.class);
 //                startActivity(mapIntent);
+            mAuth.createUserWithEmailAndPassword("diego@test.com", "password")
+                .addOnCompleteListener(Login_Activity.this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if(task.isSuccessful()){
+                            Log.d("User", "createUserWithEmail:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+                        }else{
+                            // If sign in fails, display a message to the user.
+                            Log.w("User", "createUserWithEmail:failure", task.getException());
+                            Toast.makeText(Login_Activity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
             }
         });
 
 
-    }
-
-    private void getMessage(){
-        RequestParams params = new RequestParams();
-
-        AsyncHttpClient client = new AsyncHttpClient();
-
-        client.get(url, null, new JsonHttpResponseHandler(){
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response){
-                Toast.makeText(Login_Activity.this, response.toString(), Toast.LENGTH_LONG).show();
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, Throwable e, JSONObject response){
-                Toast.makeText(Login_Activity.this, statusCode, Toast.LENGTH_LONG).show();
-            }
-        });
     }
 }
