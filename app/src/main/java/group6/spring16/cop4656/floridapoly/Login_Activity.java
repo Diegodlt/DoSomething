@@ -71,6 +71,8 @@ public class Login_Activity extends AppCompatActivity {
                             // Sign in success
                             Toast.makeText(Login_Activity.this, "Authentication success",
                                     Toast.LENGTH_LONG).show();
+                            Intent homeScreen = new Intent(Login_Activity.this, Home_Screen.class);
+                            startActivity(homeScreen);
                         } else {
                             // If sign in fails, display a message to the user.
                             Toast.makeText(Login_Activity.this, "Authentication failed.",
