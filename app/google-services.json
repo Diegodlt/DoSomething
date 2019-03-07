@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "817863810404",
+    "firebase_url": "https://do-something-ce5b5.firebaseio.com",
+    "project_id": "do-something-ce5b5",
+    "storage_bucket": "do-something-ce5b5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:817863810404:android:fb37601c1b0fbcc8",
+        "android_client_info": {
+          "package_name": "group6.spring16.cop4656.floridapoly"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "817863810404-o53238qiktr5maqv7eu55oe2fg5lrum5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxgkgyKZ7AYZ0NNAhxeSq3EPbSmQXMf-Y"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
