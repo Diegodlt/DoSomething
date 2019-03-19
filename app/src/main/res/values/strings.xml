@@ -16,5 +16,5 @@
     <string name="home_title">Home</string>
     <string name="discover_title">Discover</string>
     <string name="event_creator_title">Event Creator</string>
-    <string name="setings_title">Settings</string>
+    <string name="settings_title">Settings</string>
 </resources>

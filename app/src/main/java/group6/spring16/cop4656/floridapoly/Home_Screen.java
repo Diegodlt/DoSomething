@@ -1,6 +1,7 @@
 package group6.spring16.cop4656.floridapoly;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
@@ -19,16 +20,16 @@ import com.google.android.gms.dynamic.SupportFragmentWrapper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-public class Home_Screen extends AppCompatActivity {
+public class Home_Screen extends AppCompatActivity
+    implements HomeFragment.OnFragmentInteractionListener,
+               DiscoverFragment.OnFragmentInteractionListener,
+               EventCreatorFragment.OnFragmentInteractionListener,
+               SettingsFragment.OnFragmentInteractionListener {
+
+    private static final String BACK_STACK_ROOT_TAG = "root_frag";
 
     private FragmentManager fragmentManager;
-
     private BottomNavigationView navBar;
-
-    private FirebaseAuth mAuth;
-    private FirebaseUser mUser;
-    private Button signOutButton;
-    private TextView username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,49 +71,45 @@ public class Home_Screen extends AppCompatActivity {
             }
         });
 
-        mAuth = FirebaseAuth.getInstance();
-        mUser = mAuth.getCurrentUser();
-
-        signOutButton = findViewById(R.id.signOutButton);
-        username = findViewById(R.id.username);
-
-        if (mUser != null) {
-            username.setText(mUser.getEmail());
+        // Start the default fragment (Home)
+        Fragment frag = fragmentManager.findFragmentById(R.id.fragment_container);
+        if (frag == null) {
+            startHomeScreenFragment();
         }
-
-        signOutButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mAuth.signOut();
-                Intent mainScreen = new Intent(Home_Screen.this, MainActivity.class);
-                startActivity(mainScreen);
-            }
-        });
     }
 
     private void startHomeScreenFragment() {
-        Toast.makeText(this, "Home Screen Placeholder", Toast.LENGTH_SHORT).show();
+        HomeFragment frag = HomeFragment.newInstance();
+        openTab(frag);
     }
 
     private void startDiscoverFragment() {
-        Toast.makeText(this, "Discover Screen Placeholder", Toast.LENGTH_SHORT).show();
-
+        DiscoverFragment frag = DiscoverFragment.newInstance();
+        openTab(frag);
     }
 
     private void startEventCreatorFragment() {
-        Toast.makeText(this, "Event Creator Screen Placeholder", Toast.LENGTH_SHORT).show();
-
+        EventCreatorFragment frag = EventCreatorFragment.newInstance();
+        openTab(frag);
     }
 
     private void startSettingsFragment() {
-        Toast.makeText(this, "Settings Screen Placeholder", Toast.LENGTH_SHORT).show();
-
+        SettingsFragment frag = SettingsFragment.newInstance();
+        openTab(frag);
     }
 
-    private void openFragment(Fragment frag) {
+    private void openTab(Fragment frag) {
+        fragmentManager.popBackStack(BACK_STACK_ROOT_TAG, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.replace(R.id.fragment_container, frag);
-        transaction.addToBackStack(null);
+        transaction.addToBackStack(BACK_STACK_ROOT_TAG);
         transaction.commit();
+    }
+
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+        // Handle fragment interaction
+        // https://developer.android.com/training/basics/fragments/communicating.html
     }
 }
