@@ -1,12 +1,32 @@
 package group6.spring16.cop4656.floridapoly;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapView;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.location.FusedLocationProviderClient;
+
+import static android.support.constraint.Constraints.TAG;
 
 
 /**
@@ -17,8 +37,21 @@ import android.view.ViewGroup;
  * Use the {@link DiscoverFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class DiscoverFragment extends Fragment {
+public class DiscoverFragment extends Fragment implements OnMapReadyCallback {
+
+    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
+    private static final int DEFAULT_ZOOM = 12;
+    private static final LatLng DEFAULT_LOCATION = new LatLng(40.4246, 74.0021); //NYC
+
     private OnFragmentInteractionListener mListener;
+
+    private MapView mapView;
+    private GoogleMap map;
+
+    private boolean locationPermission = false;
+    FusedLocationProviderClient fusedLocationProviderClient;
+    Location lastLocation;
+
 
     public DiscoverFragment() {
         // Required empty public constructor
@@ -49,7 +82,18 @@ public class DiscoverFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_discover, container, false);
+        View view = inflater.inflate(R.layout.fragment_discover, container, false);
+
+        // Get location permissions before creating the map
+        getLocationPermission();
+
+        mapView = view.findViewById(R.id.discover_map);
+        mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync(this);
+
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
+
+        return view;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -57,6 +101,28 @@ public class DiscoverFragment extends Fragment {
         if (mListener != null) {
             mListener.onFragmentInteraction(uri);
         }
+    }
+
+    private void getLocationPermission() {
+        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            locationPermission = true;
+        }
+        else {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        locationPermission = false;
+        switch (requestCode) {
+            case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    locationPermission = true;
+                }
+            }
+        }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     @Override
@@ -71,9 +137,87 @@ public class DiscoverFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        mapView.onResume();
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mapView.onPause();
+    }
+
+    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mapView.onDestroy();
+    }
+
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        mapView.onLowMemory();
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        if (googleMap != null) {
+            map = googleMap;
+            try {
+                if (locationPermission) {
+                    map.setMyLocationEnabled(true);
+                    map.getUiSettings().setMyLocationButtonEnabled(true);
+                    lastLocation = null;
+                    getDeviceLocation();
+                }
+                else {
+                    map.setMyLocationEnabled(false);
+                    map.getUiSettings().setMyLocationButtonEnabled(false);
+                    getLocationPermission();
+                }
+            }
+            catch (SecurityException ex) {
+                Log.e("Exception: %s", ex.getMessage());
+            }
+        }
+    }
+
+    private void getDeviceLocation() {
+        /*
+         * Get the best and most recent location of the device, which may be null in rare
+         * cases when a location is not available.
+         */
+        try {
+            if (locationPermission) {
+                Task locationResult = fusedLocationProviderClient.getLastLocation();
+                locationResult.addOnCompleteListener(getActivity(), new OnCompleteListener() {
+                    @Override
+                    public void onComplete(@NonNull Task task) {
+                        if (task.isSuccessful()) {
+                            // Set the map's camera position to the current location of the device.
+                            lastLocation = (Location)task.getResult();
+                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                                    new LatLng(lastLocation.getLatitude(),
+                                            lastLocation.getLongitude()), DEFAULT_ZOOM));
+                        } else {
+                            Log.d(TAG, "Current location is null. Using defaults.");
+                            Log.e(TAG, "Exception: %s", task.getException());
+                            map.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM));
+                            map.getUiSettings().setMyLocationButtonEnabled(false);
+                        }
+                    }
+                });
+            }
+        } catch(SecurityException e)  {
+            Log.e("Exception: %s", e.getMessage());
+        }
     }
 
     /**
