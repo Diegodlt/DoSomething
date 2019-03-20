@@ -5,7 +5,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -15,6 +14,7 @@ public class MainActivity extends AppCompatActivity {
     Button loginButton;
     Button signUpButton;
     FirebaseAuth mAuth;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if(currentUser != null){
-            Intent homeScreen = new Intent(MainActivity.this, Home_Screen.class);
+            Intent homeScreen = new Intent(MainActivity.this, MainScreen.class);
             startActivity(homeScreen);
         }
 
