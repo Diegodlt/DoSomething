@@ -39,18 +39,22 @@ import static android.support.constraint.Constraints.TAG;
  */
 public class DiscoverFragment extends Fragment implements OnMapReadyCallback {
 
+    // Constants
+    private final String TAG = this.getClass().getSimpleName();
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private static final int DEFAULT_ZOOM = 12;
     private static final LatLng DEFAULT_LOCATION = new LatLng(40.4246, 74.0021); //NYC
 
     private OnFragmentInteractionListener mListener;
 
+    // Map
     private MapView mapView;
     private GoogleMap map;
 
+    // Location
     private boolean locationPermission = false;
-    FusedLocationProviderClient fusedLocationProviderClient;
-    Location lastLocation;
+    private FusedLocationProviderClient fusedLocationProviderClient;
+    private Location lastLocation;
 
 
     public DiscoverFragment() {
@@ -215,8 +219,9 @@ public class DiscoverFragment extends Fragment implements OnMapReadyCallback {
                     }
                 });
             }
-        } catch(SecurityException e)  {
-            Log.e("Exception: %s", e.getMessage());
+        }
+        catch(SecurityException e)  {
+            Log.e(TAG,"Exception: %s", e);
         }
     }
 
