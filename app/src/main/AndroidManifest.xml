@@ -12,7 +12,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Create_Account"></activity>
+        <activity android:name=".Home_Screen"></activity>
+        <activity android:name=".Create_Account" />
         <activity
             android:name=".Login_Activity"
             android:label="@string/title_activity_login_"

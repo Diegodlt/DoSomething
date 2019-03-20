@@ -11,5 +11,6 @@
     <string name="fName">First Name</string>
     <string name="lName">Last Name</string>
     <string name="email">Email</string>
+    <string name="signOut">Sign Out</string>
 
 </resources>
