@@ -1,6 +1,5 @@
 package group6.spring16.cop4656.floridapoly;
 
-import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
@@ -9,18 +8,9 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.transition.Transition;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.dynamic.SupportFragmentWrapper;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-
-public class Home_Screen extends AppCompatActivity
+public class MainScreen extends AppCompatActivity
     implements HomeFragment.OnFragmentInteractionListener,
                DiscoverFragment.OnFragmentInteractionListener,
                EventCreatorFragment.OnFragmentInteractionListener,
@@ -34,7 +24,7 @@ public class Home_Screen extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home_screen);
+        setContentView(R.layout.activity_main_screen);
 
         fragmentManager = getSupportFragmentManager();
 
