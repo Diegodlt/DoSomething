@@ -3,21 +3,21 @@
 
     <item
         android:id="@+id/nav_item_home_screen"
-        android:icon="@drawable/googleg_standard_color_18"
+        android:icon="@drawable/home_icon"
         android:title="@string/home_title"/>
 
     <item
         android:id="@+id/nav_item_discover"
-        android:icon="@drawable/googleg_standard_color_18"
+        android:icon="@drawable/discover_icon"
         android:title="@string/discover_title"/>
 
     <item
         android:id="@+id/nav_item_event_creator"
-        android:icon="@drawable/googleg_standard_color_18"
+        android:icon="@drawable/event_creator_icon"
         android:title="@string/event_creator_title"/>
 
     <item
         android:id="@+id/nav_item_settings"
-        android:icon="@drawable/googleg_standard_color_18"
+        android:icon="@drawable/settings_icon"
         android:title="@string/settings_title"/>
 </menu>

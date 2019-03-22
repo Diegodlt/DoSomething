@@ -20,6 +20,8 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="0dp"
         android:layout_marginEnd="0dp"
+        app:itemIconTint = "@color/design_default_color_primary_dark"
+        app:itemTextColor="@color/common_google_signin_btn_text_light_focused"
         app:layout_constraintBottom_toBottomOf="parent"
         app:menu="@menu/navigation" />
 
