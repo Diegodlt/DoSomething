@@ -30,22 +30,27 @@ public class Login_Activity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         mAuth = FirebaseAuth.getInstance();
-        loginButton = (Button)findViewById(R.id.loginButton);
+
+        emailField    = findViewById(R.id.email);
+        passwordField = findViewById(R.id.password);
+        loginButton   = findViewById(R.id.loginButton);
 
         loginButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
-                selectTextFields();
                 getTextFromFields();
-                loginUser();
+
+                if (!email.isEmpty() && !password.isEmpty()) {
+                    loginUser();
+                }
+                else {
+                    Toast.makeText(Login_Activity.this,
+                            "Please enter an email and password",
+                            Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
-    }
-
-    private void selectTextFields(){
-        emailField = (TextView)findViewById(R.id.email);
-        passwordField = (TextView)findViewById(R.id.password);
     }
 
     private void getTextFromFields(){

@@ -36,31 +36,37 @@ public class Create_Account extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
 
-        signUpButton = (Button)findViewById(R.id.signUpButton);
+
+        firstNameField = findViewById(R.id.firstName);
+        lastNameField  = findViewById(R.id.lastName);
+        userEmailField = findViewById(R.id.email);
+        passwordField  = findViewById(R.id.password);
+        signUpButton   = findViewById(R.id.signUpButton);
 
         signUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                selectTextFields();
                 getTextFromFields();
-                createUser();
+
+                if (!firstName.isEmpty() && !lastName.isEmpty() &&
+                    !email.isEmpty() && !password.isEmpty()) {
+                    createUser();
+                }
+                else {
+                    Toast.makeText(Create_Account.this,
+                            "Please fill out every form first",
+                            Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
     }
 
-    private void selectTextFields(){
-        firstNameField = (TextView)findViewById(R.id.firstName);
-        lastNameField = (TextView)findViewById(R.id.lastName);
-        userEmailField = (TextView)findViewById(R.id.email);
-        passwordField = (TextView)findViewById(R.id.password);
-    }
-
     private void getTextFromFields(){
         firstName = firstNameField.getText().toString().trim();
-        lastName = lastNameField.getText().toString().trim();
-        email = userEmailField.getText().toString().trim();
-        password = passwordField.getText().toString().trim();
+        lastName  = lastNameField.getText().toString().trim();
+        email     = userEmailField.getText().toString().trim();
+        password  = passwordField.getText().toString().trim();
     }
 
     private void createUser(){
