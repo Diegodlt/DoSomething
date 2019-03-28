@@ -88,9 +88,6 @@ public class DiscoverFragment extends Fragment implements OnMapReadyCallback {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_discover, container, false);
 
-        // Get location permissions before creating the map
-        getLocationPermission();
-
         mapView = view.findViewById(R.id.discover_map);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
@@ -123,6 +120,8 @@ public class DiscoverFragment extends Fragment implements OnMapReadyCallback {
             case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
                 if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     locationPermission = true;
+                    setMapLocationEnabled(true);
+                    moveMapToUser();
                 }
             }
         }
@@ -174,26 +173,29 @@ public class DiscoverFragment extends Fragment implements OnMapReadyCallback {
     public void onMapReady(GoogleMap googleMap) {
         if (googleMap != null) {
             map = googleMap;
-            try {
-                if (locationPermission) {
-                    map.setMyLocationEnabled(true);
-                    map.getUiSettings().setMyLocationButtonEnabled(true);
-                    lastLocation = null;
-                    getDeviceLocation();
-                }
-                else {
-                    map.setMyLocationEnabled(false);
-                    map.getUiSettings().setMyLocationButtonEnabled(false);
-                    getLocationPermission();
-                }
+            if (locationPermission) {
+                moveMapToUser();
             }
-            catch (SecurityException ex) {
-                Log.e("Exception: %s", ex.getMessage());
+            else {
+                getLocationPermission();
             }
+            setMapLocationEnabled(locationPermission);
         }
     }
 
-    private void getDeviceLocation() {
+    public void setMapLocationEnabled(boolean state) {
+        try {
+            if (map != null) {
+                map.setMyLocationEnabled(state && locationPermission);
+                map.getUiSettings().setMyLocationButtonEnabled(state && locationPermission);
+            }
+        }
+        catch (SecurityException ex) {
+            Log.e("Exception: %s", ex.getMessage());
+        }
+    }
+
+    private void moveMapToUser() {
         /*
          * Get the best and most recent location of the device, which may be null in rare
          * cases when a location is not available.
@@ -208,8 +210,9 @@ public class DiscoverFragment extends Fragment implements OnMapReadyCallback {
                             // Set the map's camera position to the current location of the device.
                             lastLocation = (Location)task.getResult();
                             map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                    new LatLng(lastLocation.getLatitude(),
-                                            lastLocation.getLongitude()), DEFAULT_ZOOM));
+                                               new LatLng(lastLocation.getLatitude(),
+                                                          lastLocation.getLongitude()),
+                                                          DEFAULT_ZOOM));
                         } else {
                             Log.d(TAG, "Current location is null. Using defaults.");
                             Log.e(TAG, "Exception: %s", task.getException());
