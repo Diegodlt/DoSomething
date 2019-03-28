@@ -30,8 +30,10 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.location.FusedLocationProviderClient;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 import static android.support.constraint.Constraints.TAG;
 
@@ -66,7 +68,7 @@ public class DiscoverFragment extends Fragment implements
     private Location lastLocation;
 
     // List of events
-    List<Event> events;
+    List<Event> events = new ArrayList<>();
 
 
     public DiscoverFragment() {
@@ -107,7 +109,13 @@ public class DiscoverFragment extends Fragment implements
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
 
         // TODO: delete me
-        // Marker test
+        addTestEvents();
+
+        return view;
+    }
+
+    //TODO: delete this function when we get real events working
+    private void addTestEvents() {
         try {
             Task locationResult = fusedLocationProviderClient.getLastLocation();
             locationResult.addOnCompleteListener(getActivity(), new OnCompleteListener() {
@@ -115,15 +123,26 @@ public class DiscoverFragment extends Fragment implements
                 public void onComplete(@NonNull Task task) {
                     if (task.isSuccessful()) {
                         Location location = (Location)task.getResult();
-                        LatLng latlng = new LatLng(location.getLatitude(), location.getLongitude());
-                        addEventMarker(new Event("TestEvent", new Date(), latlng));
+                        Random rand = new Random();
+
+                        for (int i = 0; i < 10; ++i) {
+                            double lat = location.getLatitude();
+                            double lon = location.getLongitude();
+                            lat += rand.nextGaussian() / 20.0;
+                            lon += rand.nextGaussian() / 20.0;
+
+                            String title = "TestEvent" + String.valueOf(i);
+
+                            events.add(new Event(title, new Date(), new LatLng(lat, lon)));
+                            addEventMarker(events.get(i));
+                        }
                     }
                 }
             });
-        } catch (SecurityException ex) {}
-
-
-        return view;
+        }
+        catch (SecurityException ex) {
+            Log.e(TAG, "Failed to get location for test events");
+        }
     }
 
     public void addEventMarker(Event event) {
@@ -232,7 +251,7 @@ public class DiscoverFragment extends Fragment implements
         }
     }
 
-    public void setMapLocationEnabled(boolean state) {
+    private void setMapLocationEnabled(boolean state) {
         try {
             if (map != null) {
                 map.setMyLocationEnabled(state && locationPermission);

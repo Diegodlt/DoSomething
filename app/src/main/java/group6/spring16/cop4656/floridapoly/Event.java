@@ -4,6 +4,7 @@ import android.graphics.drawable.Icon;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -13,7 +14,7 @@ public class Event {
     private Date   date;
     private LatLng location;
     private String description;
-    private List<EventRequirement> requirements;
+    private List<EventRequirement> requirements = new ArrayList<>();
 
     Event(String title, Date date, LatLng location) {
         this.title = title;
