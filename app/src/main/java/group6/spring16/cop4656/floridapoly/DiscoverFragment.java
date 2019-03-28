@@ -15,6 +15,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdate;
@@ -108,9 +109,6 @@ public class DiscoverFragment extends Fragment implements
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
 
-        // TODO: delete me
-        addTestEvents();
-
         return view;
     }
 
@@ -157,6 +155,7 @@ public class DiscoverFragment extends Fragment implements
     @Override
     public boolean onMarkerClick(final Marker marker) {
         final Event event = (Event)marker.getTag();
+        Toast.makeText(getActivity(), "Clicked " + event.getTitle(), Toast.LENGTH_SHORT).show();
 
         // Return false to indicate that we have not consumed the event and that we wish
         // for the default behavior to occur (which is for the camera to move such that the
@@ -240,6 +239,8 @@ public class DiscoverFragment extends Fragment implements
     public void onMapReady(GoogleMap googleMap) {
         if (googleMap != null) {
             map = googleMap;
+            map.setOnMarkerClickListener(this);
+
             getLocationPermission();
             if (locationPermission) {
                 moveMapToUser();
@@ -248,6 +249,10 @@ public class DiscoverFragment extends Fragment implements
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM));
             }
             setMapLocationEnabled(locationPermission);
+
+            // TODO: delete me
+            addTestEvents();
+
         }
     }
 
