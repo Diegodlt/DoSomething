@@ -10,6 +10,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,9 +23,15 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.location.FusedLocationProviderClient;
+
+import java.util.Date;
+import java.util.List;
 
 import static android.support.constraint.Constraints.TAG;
 
@@ -37,13 +44,15 @@ import static android.support.constraint.Constraints.TAG;
  * Use the {@link DiscoverFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class DiscoverFragment extends Fragment implements OnMapReadyCallback {
+public class DiscoverFragment extends Fragment implements
+        OnMapReadyCallback,
+        GoogleMap.OnMarkerClickListener {
 
     // Constants
     private final String TAG = this.getClass().getSimpleName();
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private static final int DEFAULT_ZOOM = 12;
-    private static final LatLng DEFAULT_LOCATION = new LatLng(40.4246, 74.0021); //NYC
+    private static final LatLng DEFAULT_LOCATION = new LatLng(40.7127, -74.0059); //NYC
 
     private OnFragmentInteractionListener mListener;
 
@@ -55,6 +64,9 @@ public class DiscoverFragment extends Fragment implements OnMapReadyCallback {
     private boolean locationPermission = false;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Location lastLocation;
+
+    // List of events
+    List<Event> events;
 
 
     public DiscoverFragment() {
@@ -83,7 +95,7 @@ public class DiscoverFragment extends Fragment implements OnMapReadyCallback {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_discover, container, false);
@@ -94,7 +106,43 @@ public class DiscoverFragment extends Fragment implements OnMapReadyCallback {
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(getActivity());
 
+        // TODO: delete me
+        // Marker test
+        try {
+            Task locationResult = fusedLocationProviderClient.getLastLocation();
+            locationResult.addOnCompleteListener(getActivity(), new OnCompleteListener() {
+                @Override
+                public void onComplete(@NonNull Task task) {
+                    if (task.isSuccessful()) {
+                        Location location = (Location)task.getResult();
+                        LatLng latlng = new LatLng(location.getLatitude(), location.getLongitude());
+                        addEventMarker(new Event("TestEvent", new Date(), latlng));
+                    }
+                }
+            });
+        } catch (SecurityException ex) {}
+
+
         return view;
+    }
+
+    public void addEventMarker(Event event) {
+        MarkerOptions opt = new MarkerOptions();
+        opt.title(event.getTitle());
+        opt.position(event.getLocation());
+
+        Marker mark = map.addMarker(opt);
+        mark.setTag(event);
+    }
+
+    @Override
+    public boolean onMarkerClick(final Marker marker) {
+        final Event event = (Event)marker.getTag();
+
+        // Return false to indicate that we have not consumed the event and that we wish
+        // for the default behavior to occur (which is for the camera to move such that the
+        // marker is centered and for the marker's info window to open, if it has one).
+        return false;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -173,11 +221,12 @@ public class DiscoverFragment extends Fragment implements OnMapReadyCallback {
     public void onMapReady(GoogleMap googleMap) {
         if (googleMap != null) {
             map = googleMap;
+            getLocationPermission();
             if (locationPermission) {
                 moveMapToUser();
             }
             else {
-                getLocationPermission();
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM));
             }
             setMapLocationEnabled(locationPermission);
         }
@@ -213,11 +262,11 @@ public class DiscoverFragment extends Fragment implements OnMapReadyCallback {
                                                new LatLng(lastLocation.getLatitude(),
                                                           lastLocation.getLongitude()),
                                                           DEFAULT_ZOOM));
-                        } else {
+                        }
+                        else {
                             Log.d(TAG, "Current location is null. Using defaults.");
                             Log.e(TAG, "Exception: %s", task.getException());
                             map.moveCamera(CameraUpdateFactory.newLatLngZoom(DEFAULT_LOCATION, DEFAULT_ZOOM));
-                            map.getUiSettings().setMyLocationButtonEnabled(false);
                         }
                     }
                 });
