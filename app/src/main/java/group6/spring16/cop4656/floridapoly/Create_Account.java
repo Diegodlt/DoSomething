@@ -1,5 +1,6 @@
 package group6.spring16.cop4656.floridapoly;
 
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -78,6 +79,9 @@ public class Create_Account extends AppCompatActivity {
                             Log.d("User", "createUserWithEmail:success");
                             Toast.makeText(Create_Account.this, "Account Creation Success",
                                     Toast.LENGTH_LONG).show();
+                            Intent homeScreen = new Intent(Create_Account.this, MainScreen.class);
+                            startActivity(homeScreen);
+
                         }else{
                             // If sign in fails, display a message to the user.
                             Log.w("User", "createUserWithEmail:failure", task.getException());
