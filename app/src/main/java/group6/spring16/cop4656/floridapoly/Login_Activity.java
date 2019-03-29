@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -14,14 +13,6 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.JsonHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
-
-import org.json.JSONObject;
-
-import cz.msebera.android.httpclient.Header;
 
 public class Login_Activity extends AppCompatActivity {
 
@@ -39,22 +30,27 @@ public class Login_Activity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         mAuth = FirebaseAuth.getInstance();
-        loginButton = (Button)findViewById(R.id.loginButton);
+
+        emailField    = findViewById(R.id.email);
+        passwordField = findViewById(R.id.password);
+        loginButton   = findViewById(R.id.loginButton);
 
         loginButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
-                selectTextFields();
                 getTextFromFields();
-                loginUser();
+
+                if (!email.isEmpty() && !password.isEmpty()) {
+                    loginUser();
+                }
+                else {
+                    Toast.makeText(Login_Activity.this,
+                            "Please enter an email and password",
+                            Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
-    }
-
-    private void selectTextFields(){
-        emailField = (TextView)findViewById(R.id.email);
-        passwordField = (TextView)findViewById(R.id.password);
     }
 
     private void getTextFromFields(){
@@ -71,7 +67,7 @@ public class Login_Activity extends AppCompatActivity {
                             // Sign in success
                             Toast.makeText(Login_Activity.this, "Authentication success",
                                     Toast.LENGTH_LONG).show();
-                            Intent homeScreen = new Intent(Login_Activity.this, Home_Screen.class);
+                            Intent homeScreen = new Intent(Login_Activity.this, MainScreen.class);
                             startActivity(homeScreen);
                         } else {
                             // If sign in fails, display a message to the user.

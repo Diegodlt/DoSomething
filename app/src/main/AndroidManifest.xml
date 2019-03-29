@@ -12,7 +12,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Home_Screen"></activity>
+
+        <meta-data android:name="com.google.android.geo.API_KEY" android:value="@string/maps_api_key"/>
+
+        <activity android:name=".MainScreen"></activity>
         <activity android:name=".Create_Account" />
         <activity
             android:name=".Login_Activity"
