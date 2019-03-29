@@ -88,7 +88,6 @@ public class SettingsFragment extends Fragment {
         if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
             try {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getActivity().getApplicationContext().getContentResolver(), selectedImage);
-                profilePicture = getView().findViewById(R.id.profilePicture);
                 profilePicture.setImageBitmap(bitmap);
             } catch (Exception e) {
                 e.printStackTrace();
