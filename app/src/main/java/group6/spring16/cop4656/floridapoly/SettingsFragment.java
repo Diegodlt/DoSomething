@@ -31,6 +31,8 @@ public class SettingsFragment extends Fragment {
     private OnFragmentInteractionListener mListener;
 
     private ImageView profilePicture;
+    //private FirebaseAuth userAuth;
+    //private StorageReference userStorageRef;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -63,6 +65,9 @@ public class SettingsFragment extends Fragment {
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
+
+        //userAuth = FirebaseAuth.getInstance();
+        //userStorageRef = FirebaseStorage.getInstance.getReference();
 
         profilePicture = view.findViewById(R.id.profilePicture);
 
