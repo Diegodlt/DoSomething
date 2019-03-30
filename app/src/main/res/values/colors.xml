@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#00585858</color>
+
+    <color name="colorPrimary">#00C60000</color> <!-- NOTE: FULL ALPHA CHANNEL (OPACITY 0%)-->
     <color name="colorPrimaryDark">#585858</color>
-    <color name="colorAccent">#D81B60</color>
+    <color name="colorAccent">#6EFFFFFF</color>
+
 </resources>
