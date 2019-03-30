@@ -2,7 +2,7 @@
     <string name="app_name">Do Something</string>
     <string name="login">Login</string>
     <string name="signUp">Sign Up</string>
-    <string name="hint_username">Enter your Email:</string>
+    <string name="hint_username">Email:</string>
     <string name="hint_password">Password:</string>
     <string name="title_activity_events">Map</string>
     <string name="search_radius">Search Radius(Miles)</string>
