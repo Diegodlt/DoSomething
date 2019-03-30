@@ -1,4 +1,4 @@
-package group6.spring16.cop4656.floridapoly;
+package group6.spring16.cop4656.floridapoly.event;
 
 import android.graphics.drawable.Icon;
 
@@ -7,7 +7,7 @@ public class EventRequirement {
     private String detail;
     private Icon   icon;
 
-    EventRequirement(String name) {
+    public EventRequirement(String name) {
         this.name = name;
     }
 
