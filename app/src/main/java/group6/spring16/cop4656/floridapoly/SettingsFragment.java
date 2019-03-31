@@ -59,6 +59,22 @@ public class SettingsFragment extends Fragment {
         }
     }
 
+/*    private void checkFilePermission(){
+        if(ActivityCompat.checkSelfPermission(getContext(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(getContext(),
+                        Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            this.requestPermissions(getActivity(),
+                    new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            android.Manifest.permission.READ_EXTERNAL_STORAGE},
+                    REQUEST_PERMISSIONS_CODE_WRITE_STORAGE, REQUEST_PERMISSIONS_CODE_READ_STORAGE
+                    );
+            } else{
+                Log.e("STATUS", "checkBTPermissions: No need to check permissions");
+                }
+        }
+*/
+
     @Override
     public View onCreateView(final LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
