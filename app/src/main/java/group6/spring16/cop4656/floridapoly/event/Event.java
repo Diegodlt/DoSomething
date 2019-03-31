@@ -3,21 +3,25 @@ package group6.spring16.cop4656.floridapoly.event;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 
 public class Event {
     private String title;
-    private Date   date;
+    private Calendar date;
     private LatLng location;
     private String description;
     private List<EventRequirement> requirements = new ArrayList<>();
+    private int maxAttendees;
+    //private List<User> attendees = new ArrayList<>();
 
-    public Event(String title, Date date, LatLng location) {
+    public Event(String title, Calendar dateTime, LatLng location, int maxAttendees) {
         this.title = title;
-        this.date = date;
+        this.date = dateTime;
         this.location = location;
+        this.maxAttendees = maxAttendees;
     }
 
     public String getTitle() {
@@ -28,11 +32,11 @@ public class Event {
         this.title = title;
     }
 
-    public Date getDate() {
-        return date;
+    public Calendar getDate() {
+        return (Calendar)date.clone();
     }
 
-    public void setDate(Date date) {
+    public void setDate(Calendar date) {
         this.date = date;
     }
 
@@ -50,6 +54,14 @@ public class Event {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public int getMaxAttendees() {
+        return maxAttendees;
+    }
+
+    public void setMaxAttendees(int maxAttendees) {
+        this.maxAttendees = maxAttendees;
     }
 
     public List<EventRequirement> getRequirements() {

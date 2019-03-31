@@ -28,6 +28,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.location.FusedLocationProviderClient;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -127,7 +128,7 @@ public class DiscoverFragment extends Fragment implements
 
                             String title = "TestEvent" + String.valueOf(i);
 
-                            events.add(new Event(title, new Date(), new LatLng(lat, lon)));
+                            events.add(new Event(title, Calendar.getInstance(), new LatLng(lat, lon), 50));
                             addEventMarker(events.get(i));
                         }
                     }
@@ -279,9 +280,9 @@ public class DiscoverFragment extends Fragment implements
                             // Set the map's camera position to the current location of the device.
                             lastLocation = (Location)task.getResult();
                             map.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                                               new LatLng(lastLocation.getLatitude(),
-                                                          lastLocation.getLongitude()),
-                                                          DEFAULT_ZOOM));
+                                    new LatLng(lastLocation.getLatitude(),
+                                            lastLocation.getLongitude()),
+                                    DEFAULT_ZOOM));
                         }
                         else {
                             Log.d(TAG, "Current location is null. Using defaults.");
