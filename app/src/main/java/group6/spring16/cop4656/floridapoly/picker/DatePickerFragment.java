@@ -2,6 +2,7 @@ package group6.spring16.cop4656.floridapoly.picker;
 
 import android.app.Dialog;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatDialogFragment;
 import android.app.DatePickerDialog;
 import android.widget.DatePicker;
@@ -17,7 +18,7 @@ abstract public class DatePickerFragment extends AppCompatDialogFragment impleme
     LocalDate date;
 
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
+    public Dialog onCreateDialog(@NonNull Bundle savedInstanceState) {
         // Use the current date as the default date in the picker
         c = Calendar.getInstance();
         int year  = c.get(Calendar.YEAR);

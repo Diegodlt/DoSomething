@@ -2,6 +2,7 @@ package group6.spring16.cop4656.floridapoly.picker;
 
 import android.app.Dialog;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatDialogFragment;
 import android.app.TimePickerDialog;
 import android.widget.TimePicker;
@@ -15,7 +16,7 @@ abstract public class TimePickerFragment extends AppCompatDialogFragment impleme
     private Calendar c;
 
     @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
+    public Dialog onCreateDialog(@NonNull Bundle savedInstanceState) {
         // Use the current time as the default time in the picker
         c = Calendar.getInstance();
         int hour   = c.get(Calendar.HOUR_OF_DAY);
