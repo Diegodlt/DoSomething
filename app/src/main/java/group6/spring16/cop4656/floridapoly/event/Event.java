@@ -1,6 +1,4 @@
-package group6.spring16.cop4656.floridapoly;
-
-import android.graphics.drawable.Icon;
+package group6.spring16.cop4656.floridapoly.event;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -16,7 +14,7 @@ public class Event {
     private String description;
     private List<EventRequirement> requirements = new ArrayList<>();
 
-    Event(String title, Date date, LatLng location) {
+    public Event(String title, Date date, LatLng location) {
         this.title = title;
         this.date = date;
         this.location = location;

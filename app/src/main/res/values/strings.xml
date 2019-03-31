@@ -1,21 +1,24 @@
 <resources>
     <string name="app_name">Do Something</string>
+
     <string name="login">Login</string>
     <string name="signUp">Sign Up</string>
-    <string name="hint_username">Email:</string>
-    <string name="hint_password">Password:</string>
-    <string name="title_activity_events">Map</string>
-    <string name="search_radius">Search Radius(Miles)</string>
-    <string name="back">Back</string>
-    <string name="title_activity_login_">Login_Activity</string>
+
+    <string name="hint_username">Email</string>
+    <string name="hint_password">Password</string>
     <string name="fName">First Name</string>
     <string name="lName">Last Name</string>
     <string name="email">Email</string>
+
+    <string name="search_radius">Search Radius(Miles)</string>
+    <string name="back">Back</string>
     <string name="signOut">Sign Out</string>
 
+    <string name="title_activity_login_">Login_Activity</string>
     <string name="home_title">Home</string>
     <string name="discover_title">Discover</string>
     <string name="event_creator_title">Event Creator</string>
     <string name="settings_title">Settings</string>
+
     <string name="picture_edit">Tap picture to edit</string>
 </resources>
