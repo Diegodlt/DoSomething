@@ -113,7 +113,12 @@ public class LocationSelectorActivity extends AppCompatActivity implements OnMap
                 break;
             }
             case R.id.location_selector_checkmark: {
-                returnLocation(RESULT_OK);
+                if (selectedLocation != null) {
+                    returnLocation(RESULT_OK);
+                }
+                else {
+                    returnLocation(RESULT_CANCELED);
+                }
                 break;
             }
             default: break;
