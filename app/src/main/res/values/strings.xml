@@ -21,4 +21,13 @@
     <string name="settings_title">Settings</string>
 
     <string name="picture_edit">Tap picture to edit</string>
+
+    <!--Event Creator strings-->
+    <string name="event_creator_event_name">Event Name</string>
+    <string name="event_creator_date">Date</string>
+    <string name="event_creator_time">Time</string>
+    <string name="event_creator_max_attendees">Max Attendees</string>
+    <string name="event_creator_description">Description</string>
+    <string name="event_creator_location_button">Set Location</string>
+    <string name="event_creator_create_event_button">Create Event</string>
 </resources>

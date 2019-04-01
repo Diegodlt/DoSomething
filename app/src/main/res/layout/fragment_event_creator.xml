@@ -19,7 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:hint="Event Name"
+            android:hint="@string/event_creator_event_name"
             android:importantForAutofill="no"
             android:inputType="textPersonName" />
 
@@ -37,7 +37,7 @@
                 android:ems="10"
                 android:focusable="false"
                 android:longClickable="false"
-                android:hint="Date"
+                android:hint="@string/event_creator_date"
                 android:importantForAutofill="no"
                 android:inputType="date" />
 
@@ -49,7 +49,7 @@
                 android:ems="10"
                 android:focusable="false"
                 android:longClickable="false"
-                android:hint="Time"
+                android:hint="@string/event_creator_time"
                 android:importantForAutofill="no"
                 android:inputType="time" />
         </LinearLayout>
@@ -59,7 +59,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:ems="10"
-            android:hint="Max Persons"
+            android:hint="@string/event_creator_max_attendees"
             android:importantForAutofill="no"
             android:inputType="number" />
 
@@ -68,7 +68,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:ems="10"
-            android:hint="Description"
+            android:hint="@string/event_creator_description"
             android:importantForAutofill="no"
             android:inputType="textMultiLine" />
     </LinearLayout>
@@ -86,7 +86,7 @@
             style="@style/Widget.AppCompat.Button.Borderless"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Set Location"
+            android:text="@string/event_creator_location_button"
             android:textAlignment="viewStart" />
 
         <com.google.android.gms.maps.MapView
@@ -100,5 +100,5 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:text="Create Event" />
+        android:text="@string/event_creator_create_event_button" />
 </RelativeLayout>
