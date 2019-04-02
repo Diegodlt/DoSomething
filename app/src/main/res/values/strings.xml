@@ -21,6 +21,7 @@
     <string name="settings_title">Settings</string>
 
     <string name="picture_edit">Tap picture to edit</string>
+    <string name="dialog_select_photo">SelectPhotoDialog</string>
 
     <!--Event Creator strings-->
     <string name="event_creator_event_name">Event Name</string>
@@ -30,4 +31,7 @@
     <string name="event_creator_description">Description</string>
     <string name="event_creator_location_button">Set Location</string>
     <string name="event_creator_create_event_button">Create Event</string>
+
+    <string name="choose_photo_from_memory">Choose photo from memory</string>
+    <string name="take_a_photo">Take a Photo</string>
 </resources>
