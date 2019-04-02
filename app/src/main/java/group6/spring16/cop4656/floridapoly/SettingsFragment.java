@@ -17,7 +17,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -41,15 +40,32 @@ import java.io.IOException;
  * Use the {@link SettingsFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SettingsFragment extends Fragment {
+public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPhotoSelectedListener{
+
+    @Override
+    public void getImagePath(Uri imagePath) {
+        Log.d(TAG, "getImagePath: setting the image to imageview");
+        //assign to global variable
+        selectedImageBitmap = null;
+        selectedImageUri = imagePath;
+    }
+
+    @Override
+    public void getImageBitmap(Bitmap bitmap) {
+        Log.d(TAG, "getImageBitmap: setting the image to imageview");
+        profilePicture.setImageBitmap(bitmap);
+        //assign to a global variable
+        selectedImageUri = null;
+        selectedImageBitmap = bitmap;
+    }
 
     private OnFragmentInteractionListener mListener;
 
     private static final String TAG = "SettingsFragment";
     private static final int REQUEST_CODE = 1;
     private ImageView profilePicture;
-    private Bitmap imageBitmap;
-    private Uri selectedImage;
+    private Bitmap selectedImageBitmap;
+    private Uri selectedImageUri;
     private byte[] mUploadBytes;
     private double mProgress = 0;
 
@@ -93,45 +109,36 @@ public class SettingsFragment extends Fragment {
         userStorageRef = FirebaseStorage.getInstance().getReference();
         profilePicture = view.findViewById(R.id.profilePicture);
 
-        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-
+        //getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         init();
 
         return view;
     }
 
-    private void init(){
+    private void init() {
         profilePicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "OnClick: opening dialog to choose new photo");
                 verifyPermissions();
-                SelectPhotoDialog dialog = new SelectPhotoDialog();
-                dialog.show(getFragmentManager(),getString(R.string.dialog_select_photo));
-                dialog.setTargetFragment(SettingsFragment.this, 1);
             }
         });
-/*        profilePicture.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (ActivityCompat.checkSelfPermission(getContext(),
-                        android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                    requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
 
-                } else {
-                    Intent getPhoto = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    startActivityForResult(getPhoto, 1);
-                }
-            }
-        });
-*/
+        //we have a bitmap and no Uri
+        if (selectedImageBitmap != null && selectedImageUri == null) {
+            uploadNewPhoto(selectedImageBitmap);
+        }
+        //we have no bitmap and a uri
+        else if (selectedImageBitmap == null && selectedImageUri != null) {
+            uploadNewPhoto(selectedImageUri);
+        }
     }
 
     private void verifyPermissions(){
         Log.e(TAG, "verifyPermissions: asking user for permissions");
 
-        String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE,
-        Manifest.permission.CAMERA};
+        String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.CAMERA};
 
         if(ContextCompat.checkSelfPermission(this.getActivity().getApplicationContext(),
                 permissions[0]) == PackageManager.PERMISSION_GRANTED
@@ -139,41 +146,43 @@ public class SettingsFragment extends Fragment {
                 permissions[1]) == PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(this.getActivity().getApplicationContext(),
                 permissions[2]) == PackageManager.PERMISSION_GRANTED){
-
+                    myDialogBox();
         }else{
             ActivityCompat.requestPermissions(this.getActivity(), permissions,REQUEST_CODE);
+            verifyPermissions();
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        verifyPermissions();
     }
 
-    // Method to perform profile picture replacement when user decides to change it
-/*    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        selectedImage = data.getData();
-        if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
-            try {
-                imageBitmap = MediaStore.Images.Media.getBitmap(this.getActivity().getApplicationContext().getContentResolver(),
-                        selectedImage);
-                profilePicture.setImageBitmap(imageBitmap);
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+    private void myDialogBox(){
+        Log.e(TAG,"myDialogBox: Opening dialog box");
+        SelectPhotoDialog dialog = new SelectPhotoDialog();
+        dialog.show(getFragmentManager(),getString(R.string.dialog_select_photo));
+        dialog.setTargetFragment(SettingsFragment.this, 1);
     }
-*/
 
-    // Background method to resize user profile image for faster image upload to database
-    public abstract class BackgroundImageResize extends AsyncTask<Uri, Integer, byte[]> {     //Changed to Static
+    private void uploadNewPhoto(Bitmap bitmap){
+        Log.d(TAG, "uploadNewPhoto: uploading a new image bitmap to storage");
+        BackgroundImageResize resize = new BackgroundImageResize(bitmap);
+        Uri uri = null;
+        resize.execute(uri);
+    }
+
+    private void uploadNewPhoto(Uri imagePath){
+        Log.d(TAG, "uploadNewPhoto: uploading a new image uri to storage.");
+        BackgroundImageResize resize = new BackgroundImageResize(null);
+        resize.execute(imagePath);
+    }
+
+    public class BackgroundImageResize extends AsyncTask<Uri, Integer, byte[]>{
         Bitmap mBitmap;
-        public BackgroundImageResize(Bitmap bitmap){
-            if(bitmap !=null){
+        public BackgroundImageResize(Bitmap bitmap) {
+            if(bitmap != null){
                 this.mBitmap = bitmap;
             }
         }
@@ -184,11 +193,12 @@ public class SettingsFragment extends Fragment {
         }
         @Override
         protected byte[] doInBackground(Uri... params) {
+            Log.d(TAG, "doInBackground: started.");
             if(mBitmap == null){
                 try{
                     mBitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), params[0]);
                 }catch (IOException e){
-                    Log.e("info", "doInBackground: IOException " + e.getMessage());
+                    Log.e(TAG, "doInBackground: IOException: " + e.getMessage());
                 }
             }
             byte[] bytes = getBytesFromBitmap(mBitmap, 100);
@@ -198,12 +208,13 @@ public class SettingsFragment extends Fragment {
         protected void onPostExecute(byte[] bytes) {
             super.onPostExecute(bytes);
             mUploadBytes = bytes;
+            //execute the upload task
+            executeUploadTask();
         }
     }
 
     // Method to perform image upload
     private void executeUploadTask(){
-
         final StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("userPictures/users/" +
                 FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + "profilePicture");
 

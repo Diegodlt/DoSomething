@@ -15,16 +15,18 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.support.v4.app.DialogFragment;
 
+import java.io.IOException;
+
 
 public class SelectPhotoDialog extends DialogFragment{
 
     private static final String TAG = "SelectPhotoDialog";
-    private static final int PICKFILE_REQUEST_CODE = 1234;
-    private static final int CAMERA_REQUEST_CODE = 4321;
+    private static final int PICKFILE_REQUEST_CODE = 11;
+    private static final int CAMERA_REQUEST_CODE = 12;
 
     //Interface method
     public interface OnPhotoSelectedListener{
-        void getImagePath(Uri imagePath);
+        void getImagePath(Uri imagePath) throws IOException;
         void getImageBitmap(Bitmap bitmap);
     }
 
@@ -66,7 +68,11 @@ public class SelectPhotoDialog extends DialogFragment{
         if(requestCode == PICKFILE_REQUEST_CODE && resultCode == Activity.RESULT_OK){
             Uri selectedImageUri = data.getData();
             Log.d(TAG, "OnActivityResult: image Uri: " + selectedImageUri);
-            mOnPhotoSelectedListener.getImagePath(selectedImageUri);
+            try {
+                mOnPhotoSelectedListener.getImagePath(selectedImageUri);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             getDialog().dismiss();
         }
 
@@ -82,7 +88,7 @@ public class SelectPhotoDialog extends DialogFragment{
     @Override
     public void onAttach(Context context) {
         try{
-            mOnPhotoSelectedListener = (OnPhotoSelectedListener) getActivity();
+            mOnPhotoSelectedListener = (OnPhotoSelectedListener) getTargetFragment();
         }catch (ClassCastException e){
             Log.e(TAG,"onAttach: ClassCastException: " + e.getMessage() );
         }
