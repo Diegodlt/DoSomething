@@ -1,22 +1,37 @@
 package group6.spring16.cop4656.floridapoly;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -30,9 +45,17 @@ public class SettingsFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
+    private static final String TAG = "SettingsFragment";
+    private static final int REQUEST_CODE = 1;
     private ImageView profilePicture;
-    //private FirebaseAuth userAuth;
-    //private StorageReference userStorageRef;
+    private Bitmap imageBitmap;
+    private Uri selectedImage;
+    private byte[] mUploadBytes;
+    private double mProgress = 0;
+
+    private StorageReference userStorageRef;
+    private FirebaseUser userID;
+    private Uri firebaseUri;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -59,22 +82,6 @@ public class SettingsFragment extends Fragment {
         }
     }
 
-/*    private void checkFilePermission(){
-        if(ActivityCompat.checkSelfPermission(getContext(),
-                Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED &&
-                ActivityCompat.checkSelfPermission(getContext(),
-                        Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            this.requestPermissions(getActivity(),
-                    new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            android.Manifest.permission.READ_EXTERNAL_STORAGE},
-                    REQUEST_PERMISSIONS_CODE_WRITE_STORAGE, REQUEST_PERMISSIONS_CODE_READ_STORAGE
-                    );
-            } else{
-                Log.e("STATUS", "checkBTPermissions: No need to check permissions");
-                }
-        }
-*/
-
     @Override
     public View onCreateView(final LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
@@ -82,39 +89,162 @@ public class SettingsFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
-        //userAuth = FirebaseAuth.getInstance();
-        //userStorageRef = FirebaseStorage.getInstance.getReference();
-
+        userID = FirebaseAuth.getInstance().getCurrentUser();
+        userStorageRef = FirebaseStorage.getInstance().getReference();
         profilePicture = view.findViewById(R.id.profilePicture);
 
+        getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+
+        init();
+
+        return view;
+    }
+
+    private void init(){
         profilePicture.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (ActivityCompat.checkSelfPermission(getContext(),android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                Log.d(TAG, "OnClick: opening dialog to choose new photo");
+                verifyPermissions();
+                SelectPhotoDialog dialog = new SelectPhotoDialog();
+                dialog.show(getFragmentManager(),getString(R.string.dialog_select_photo));
+                dialog.setTargetFragment(SettingsFragment.this, 1);
+            }
+        });
+/*        profilePicture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (ActivityCompat.checkSelfPermission(getContext(),
+                        android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
                     requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+
                 } else {
                     Intent getPhoto = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     startActivityForResult(getPhoto, 1);
                 }
             }
         });
-        return view;
+*/
+    }
+
+    private void verifyPermissions(){
+        Log.e(TAG, "verifyPermissions: asking user for permissions");
+
+        String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.CAMERA};
+
+        if(ContextCompat.checkSelfPermission(this.getActivity().getApplicationContext(),
+                permissions[0]) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this.getActivity().getApplicationContext(),
+                permissions[1]) == PackageManager.PERMISSION_GRANTED
+                && ContextCompat.checkSelfPermission(this.getActivity().getApplicationContext(),
+                permissions[2]) == PackageManager.PERMISSION_GRANTED){
+
+        }else{
+            ActivityCompat.requestPermissions(this.getActivity(), permissions,REQUEST_CODE);
+        }
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    // Method to perform profile picture replacement when user decides to change it
+/*    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        Uri selectedImage = data.getData();
+        selectedImage = data.getData();
         if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
             try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getActivity().getApplicationContext().getContentResolver(), selectedImage);
-                profilePicture.setImageBitmap(bitmap);
+                imageBitmap = MediaStore.Images.Media.getBitmap(this.getActivity().getApplicationContext().getContentResolver(),
+                        selectedImage);
+                profilePicture.setImageBitmap(imageBitmap);
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
+*/
+
+    // Background method to resize user profile image for faster image upload to database
+    public abstract class BackgroundImageResize extends AsyncTask<Uri, Integer, byte[]> {     //Changed to Static
+        Bitmap mBitmap;
+        public BackgroundImageResize(Bitmap bitmap){
+            if(bitmap !=null){
+                this.mBitmap = bitmap;
+            }
+        }
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            Toast.makeText(getActivity(), "compressing image", Toast.LENGTH_SHORT).show();
+        }
+        @Override
+        protected byte[] doInBackground(Uri... params) {
+            if(mBitmap == null){
+                try{
+                    mBitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), params[0]);
+                }catch (IOException e){
+                    Log.e("info", "doInBackground: IOException " + e.getMessage());
+                }
+            }
+            byte[] bytes = getBytesFromBitmap(mBitmap, 100);
+            return bytes;
+        }
+        @Override
+        protected void onPostExecute(byte[] bytes) {
+            super.onPostExecute(bytes);
+            mUploadBytes = bytes;
+        }
+    }
+
+    // Method to perform image upload
+    private void executeUploadTask(){
+
+        final StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("userPictures/users/" +
+                FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + "profilePicture");
+
+        UploadTask uploadTask = storageReference.putBytes(mUploadBytes);
+        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                Toast.makeText(getActivity(), "Upload Success", Toast.LENGTH_SHORT).show();
+
+                //insert the download URL into the firebase database
+                userStorageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                    @Override
+                    public void onSuccess(Uri uri) {
+                        firebaseUri = uri;
+                    }
+                });
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(getActivity(),"could not upload photo", Toast.LENGTH_SHORT).show();
+            }
+        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                double currentProgress = (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                if (currentProgress > (mProgress+15)){
+                    mProgress = (100 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                    Toast.makeText(getActivity(), mProgress + "%", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+    }
+
+    // Method to convert the Bitmap picture to an array of bytes
+    public static byte[] getBytesFromBitmap(Bitmap bitmap, int quality){
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality,stream);
+        return stream.toByteArray();
+    }
+
 
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
