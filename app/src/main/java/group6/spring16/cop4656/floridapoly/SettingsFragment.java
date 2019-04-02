@@ -43,8 +43,10 @@ import java.io.IOException;
 public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPhotoSelectedListener{
 
     @Override
-    public void getImagePath(Uri imagePath) {
+    public void getImagePath(Uri imagePath) throws IOException {
         Log.d(TAG, "getImagePath: setting the image to imageview");
+        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), imagePath);
+        profilePicture.setImageBitmap(bitmap);
         //assign to global variable
         selectedImageBitmap = null;
         selectedImageUri = imagePath;
