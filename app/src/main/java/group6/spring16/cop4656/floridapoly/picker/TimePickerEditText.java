@@ -12,7 +12,7 @@ import java.util.Calendar;
 
 public class TimePickerEditText extends TimePickerFragment {
     private EditText text;
-    private String dateFormat = "h:m a";
+    private String dateFormat = "h:mm a";
 
     public void setEditText(final FragmentManager fragmentManager, EditText t) {
         text = t;
