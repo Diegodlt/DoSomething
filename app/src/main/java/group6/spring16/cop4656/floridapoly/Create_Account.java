@@ -11,14 +11,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class Create_Account extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
     private Button signUpButton;
     private TextView firstNameField;
     private TextView lastNameField;
@@ -36,7 +44,7 @@ public class Create_Account extends AppCompatActivity {
         setContentView(R.layout.create_account_activity);
 
         mAuth = FirebaseAuth.getInstance();
-
+        db = FirebaseFirestore.getInstance();
 
         firstNameField = findViewById(R.id.firstName);
         lastNameField  = findViewById(R.id.lastName);
@@ -79,6 +87,8 @@ public class Create_Account extends AppCompatActivity {
                             Log.d("User", "createUserWithEmail:success");
                             Toast.makeText(Create_Account.this, "Account Creation Success",
                                     Toast.LENGTH_LONG).show();
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            addUserToDB(user.getUid());
                             Intent homeScreen = new Intent(Create_Account.this, MainScreen.class);
                             startActivity(homeScreen);
 
@@ -90,6 +100,15 @@ public class Create_Account extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    private void addUserToDB(String userId){
+        Map<String, Object> user = new HashMap<>();
+        user.put("first", firstName);
+        user.put("last", lastName);
+        db.collection("users")
+                .document(userId)
+                .set(user);
     }
 
 }
