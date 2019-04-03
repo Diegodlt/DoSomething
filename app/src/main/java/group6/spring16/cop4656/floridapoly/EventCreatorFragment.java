@@ -25,11 +25,14 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import group6.spring16.cop4656.floridapoly.event.Event;
 import group6.spring16.cop4656.floridapoly.picker.DatePickerEditText;
@@ -195,7 +198,6 @@ public class EventCreatorFragment extends Fragment implements OnMapReadyCallback
                     public void onSuccess(DocumentReference documentReference) {
                         Log.d("DB", "DocumentSnapshot added with ID: " + documentReference.getId());
                         // TODO: I'm not sure where the app should take the user after an event is created
-                        Toast.makeText(getActivity(),"Event created!", Toast.LENGTH_SHORT).show();
                         Intent homeScreen = new Intent(getActivity(), MainScreen.class);
                         startActivity(homeScreen);
                     }
