@@ -18,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnFailureListener;
@@ -50,6 +51,7 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
         //assign to global variable
         selectedImageBitmap = null;
         selectedImageUri = imagePath;
+        uploadNewPhoto(selectedImageUri);
     }
 
     @Override
@@ -59,6 +61,7 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
         //assign to a global variable
         selectedImageUri = null;
         selectedImageBitmap = bitmap;
+        uploadNewPhoto(selectedImageBitmap);
     }
 
     private OnFragmentInteractionListener mListener;
@@ -66,6 +69,7 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
     private static final String TAG = "SettingsFragment";
     private static final int REQUEST_CODE = 1;
     private ImageView profilePicture;
+    private TextView emailTextView;
     private Bitmap selectedImageBitmap;
     private Uri selectedImageUri;
     private byte[] mUploadBytes;
@@ -110,6 +114,8 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
         userID = FirebaseAuth.getInstance().getCurrentUser();
         userStorageRef = FirebaseStorage.getInstance().getReference();
         profilePicture = view.findViewById(R.id.profilePicture);
+        emailTextView = view.findViewById(R.id.emailTextView);
+        emailTextView.setText(userID.getEmail());
 
         //getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         init();
@@ -124,15 +130,6 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
                 verifyPermissions();
             }
         });
-
-        //we have a bitmap and no Uri
-        if (selectedImageBitmap != null && selectedImageUri == null) {
-            uploadNewPhoto(selectedImageBitmap);
-        }
-        //we have no bitmap and a uri
-        else if (selectedImageBitmap == null && selectedImageUri != null) {
-            uploadNewPhoto(selectedImageUri);
-        }
     }
 
     private void verifyPermissions(){
@@ -217,14 +214,14 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
 
     // Method to perform image upload
     private void executeUploadTask(){
-        final StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("userPictures/users/" +
+        final StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("users/" +
                 FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + "profilePicture");
 
         UploadTask uploadTask = storageReference.putBytes(mUploadBytes);
         uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                Toast.makeText(getActivity(), "Upload Success", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "Profile picture updated!", Toast.LENGTH_SHORT).show();
 
                 //insert the download URL into the firebase database
                 userStorageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
