@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,9 +22,17 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import group6.spring16.cop4656.floridapoly.event.Event;
 import group6.spring16.cop4656.floridapoly.picker.DatePickerEditText;
@@ -53,6 +62,8 @@ public class EventCreatorFragment extends Fragment implements OnMapReadyCallback
     private MapView   mapView;
     private GoogleMap map;
     private LatLng    eventLocation;
+    private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
 
     private DatePickerEditText dateText;
     private TimePickerEditText timeText;
@@ -92,6 +103,10 @@ public class EventCreatorFragment extends Fragment implements OnMapReadyCallback
         locationButton   = view.findViewById(R.id.event_location_select_button);
         descriptionText  = view.findViewById(R.id.event_description_text);
         maxAttendeesText = view.findViewById(R.id.event_max_attendees_text);
+
+        // Initialize database and auth objects
+        db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
 
         dateText = new DatePickerEditText();
         dateText.setEditText(getActivity().getSupportFragmentManager(), (EditText)view.findViewById(R.id.event_date_text));
@@ -161,7 +176,7 @@ public class EventCreatorFragment extends Fragment implements OnMapReadyCallback
         final String name         = nameText.getText().toString();
         final Date   date         = dateText.getDate();
         final Date   time         = timeText.getTime();
-        final String maxAttendees = maxAttendeesText.getText().toString();
+        final int maxAttendees = Integer.parseInt(maxAttendeesText.getText().toString());
         final String description  = descriptionText.getText().toString();
 
         // Combine the two dates into one calendar
@@ -173,8 +188,30 @@ public class EventCreatorFragment extends Fragment implements OnMapReadyCallback
         dateCal.set(Calendar.MINUTE, timeCal.get(Calendar.MINUTE));
 
         // Create the event
-        Event event = new Event(name, dateCal, eventLocation, Integer.parseInt(maxAttendees));
+//        Event event = new Event(name, dateCal, eventLocation, Integer.parseInt(maxAttendees));
+//        event.setDescription(description);
+
+        // Send event object to Firestore DB
+        String userId = mAuth.getCurrentUser().getUid();
+        Event event = new Event(name, dateCal, new LatLng(eventLocation.latitude,eventLocation.longitude), maxAttendees, userId );
         event.setDescription(description);
+        db.collection("events")
+                .add(event)
+                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                    @Override
+                    public void onSuccess(DocumentReference documentReference) {
+                        Log.d("DB", "DocumentSnapshot added with ID: " + documentReference.getId());
+                        // TODO: I'm not sure where the app should take the user after an event is created
+                        Intent homeScreen = new Intent(getActivity(), MainScreen.class);
+                        startActivity(homeScreen);
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.w("DB", "Error adding document", e);
+                    }
+                });
     }
 
     @Override
