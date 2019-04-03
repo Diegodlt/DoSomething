@@ -15,14 +15,30 @@ public class Event {
     private String description;
     private List<EventRequirement> requirements = new ArrayList<>();
     private int maxAttendees;
+    private String uid;
     //private List<User> attendees = new ArrayList<>();
 
-    public Event(String title, Calendar dateTime, LatLng location, int maxAttendees) {
+    // Firestore requires a no-arg constructor for custom objects
+    public Event(){
+
+    }
+
+    public Event(String title, Calendar dateTime, LatLng location, int maxAttendees, String uid) {
+        this.title = title;
+        this.date = dateTime;
+        this.location = location;
+        this.maxAttendees = maxAttendees;
+        this.uid = uid;
+    }
+
+    // Adding a second constructor to initialize objects needed for the Discover Fragment
+    public Event(String title, Calendar dateTime, LatLng location, int maxAttendees){
         this.title = title;
         this.date = dateTime;
         this.location = location;
         this.maxAttendees = maxAttendees;
     }
+
 
     public String getTitle() {
         return title;
@@ -71,4 +87,6 @@ public class Event {
     public void addRequirement(EventRequirement requirement) {
         requirements.add(requirement);
     }
+
+    public String getUid() { return uid; }
 }
