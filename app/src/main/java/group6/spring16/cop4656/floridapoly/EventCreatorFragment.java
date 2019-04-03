@@ -187,13 +187,9 @@ public class EventCreatorFragment extends Fragment implements OnMapReadyCallback
         dateCal.set(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY));
         dateCal.set(Calendar.MINUTE, timeCal.get(Calendar.MINUTE));
 
-        // Create the event
-//        Event event = new Event(name, dateCal, eventLocation, Integer.parseInt(maxAttendees));
-//        event.setDescription(description);
-
         // Send event object to Firestore DB
         String userId = mAuth.getCurrentUser().getUid();
-        Event event = new Event(name, dateCal, new LatLng(eventLocation.latitude,eventLocation.longitude), maxAttendees, userId );
+        Event event = new Event(name, dateCal, eventLocation.latitude, eventLocation.longitude, maxAttendees, userId );
         event.setDescription(description);
         db.collection("events")
                 .add(event)

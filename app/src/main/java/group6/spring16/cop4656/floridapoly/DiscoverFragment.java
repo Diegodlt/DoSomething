@@ -26,11 +26,16 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import group6.spring16.cop4656.floridapoly.event.Event;
@@ -68,6 +73,10 @@ public class DiscoverFragment extends Fragment implements
     // List of events
     List<Event> events = new ArrayList<>();
 
+    // DB and Auth config
+    FirebaseFirestore db;
+    FirebaseAuth mAuth;
+
 
     public DiscoverFragment() {
         // Required empty public constructor
@@ -92,6 +101,9 @@ public class DiscoverFragment extends Fragment implements
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
         }
+
+        db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
     }
 
     @Override
@@ -111,48 +123,48 @@ public class DiscoverFragment extends Fragment implements
 
     //TODO: delete this function when we get real events working
     private void addTestEvents() {
-        try {
-            Task locationResult = fusedLocationProviderClient.getLastLocation();
-            locationResult.addOnCompleteListener(getActivity(), new OnCompleteListener() {
-                @Override
-                public void onComplete(@NonNull Task task) {
-                    if (task.isSuccessful()) {
-                        Location location = (Location)task.getResult();
-                        Random rand = new Random();
-
-                        for (int i = 0; i < 10; ++i) {
-                            double lat = location.getLatitude();
-                            double lon = location.getLongitude();
-                            lat += rand.nextGaussian() / 20.0;
-                            lon += rand.nextGaussian() / 20.0;
-
-                            String title = "TestEvent" + String.valueOf(i);
-
-                            events.add(new Event(title, Calendar.getInstance(), new LatLng(lat, lon), 50));
-                            addEventMarker(events.get(i));
+        db.collection("events")
+                .get()
+                .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                        if (task.isSuccessful()) {
+                            for (QueryDocumentSnapshot document : task.getResult()) {
+                                QueryDocumentSnapshot doc = document;
+                                double lat = Double.parseDouble(doc.get("lat").toString());
+                                double lng = Double.parseDouble(doc.get("lng").toString());
+                                LatLng location = new LatLng(lat, lng);
+                                String title = doc.get("title").toString();
+                                addEventMarker(title, location);
+                                Log.d("DB data", document.getId() + " => " + document.getData());
+                            }
+                        } else {
+                            Log.w("DB error", "Error getting documents.", task.getException());
                         }
                     }
-                }
-            });
-        }
-        catch (SecurityException ex) {
-            Log.e(TAG, "Failed to get location for test events");
-        }
+                });
     }
 
-    public void addEventMarker(Event event) {
+    public void addEventMarker(String title, LatLng position){
         MarkerOptions opt = new MarkerOptions();
-        opt.title(event.getTitle());
-        opt.position(event.getLocation());
+        opt.title(title);
+        opt.position(position);
 
         Marker mark = map.addMarker(opt);
-        mark.setTag(event);
     }
+//    public void addEventMarker(Event event) {
+//        MarkerOptions opt = new MarkerOptions();
+//        opt.title(event.getTitle());
+//        opt.position(event.getLocation());
+//
+//        Marker mark = map.addMarker(opt);
+//        mark.setTag(event);
+//    }
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
-        final Event event = (Event)marker.getTag();
-        Toast.makeText(getActivity(), "Clicked " + event.getTitle(), Toast.LENGTH_SHORT).show();
+//        final Event event = (Event)marker.getTag();
+        Toast.makeText(getActivity(), "Clicked " + marker.getTitle(), Toast.LENGTH_SHORT).show();
 
         // Return false to indicate that we have not consumed the event and that we wish
         // for the default behavior to occur (which is for the camera to move such that the

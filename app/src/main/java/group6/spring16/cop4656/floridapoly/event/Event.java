@@ -11,7 +11,8 @@ import java.util.List;
 public class Event {
     private String title;
     private Calendar date;
-    private LatLng location;
+    private double lat;
+    private double lng;
     private String description;
     private List<EventRequirement> requirements = new ArrayList<>();
     private int maxAttendees;
@@ -23,21 +24,15 @@ public class Event {
 
     }
 
-    public Event(String title, Calendar dateTime, LatLng location, int maxAttendees, String uid) {
+    public Event(String title, Calendar dateTime, double lat, double lng, int maxAttendees, String uid) {
         this.title = title;
         this.date = dateTime;
-        this.location = location;
+        this.lat = lat;
+        this.lng = lng;
         this.maxAttendees = maxAttendees;
         this.uid = uid;
     }
 
-    // Adding a second constructor to initialize objects needed for the Discover Fragment
-    public Event(String title, Calendar dateTime, LatLng location, int maxAttendees){
-        this.title = title;
-        this.date = dateTime;
-        this.location = location;
-        this.maxAttendees = maxAttendees;
-    }
 
 
     public String getTitle() {
@@ -52,17 +47,11 @@ public class Event {
         return (Calendar)date.clone();
     }
 
-    public void setDate(Calendar date) {
-        this.date = date;
-    }
+    public void setDate(Calendar date) { this.date = date; }
 
-    public LatLng getLocation() {
-        return location;
-    }
+    public double getLat() { return lat;}
 
-    public void setLocation(LatLng location) {
-        this.location = location;
-    }
+    public double getLng() { return lng; }
 
     public String getDescription() {
         return description;
@@ -89,4 +78,5 @@ public class Event {
     }
 
     public String getUid() { return uid; }
+
 }
