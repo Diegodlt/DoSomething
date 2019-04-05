@@ -121,45 +121,34 @@ public class DiscoverFragment extends Fragment implements
         return view;
     }
 
-    //TODO: delete this function when we get real events working
-    private void addTestEvents() {
+    private void addEvents() {
+
         db.collection("events")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<QuerySnapshot> task) {
                         if (task.isSuccessful()) {
-                            for (QueryDocumentSnapshot document : task.getResult()) {
-                                QueryDocumentSnapshot doc = document;
-                                double lat = Double.parseDouble(doc.get("lat").toString());
-                                double lng = Double.parseDouble(doc.get("lng").toString());
-                                LatLng location = new LatLng(lat, lng);
-                                String title = doc.get("title").toString();
-                                addEventMarker(title, location);
-                                Log.d("DB data", document.getId() + " => " + document.getData());
+                            for (QueryDocumentSnapshot doc : task.getResult()) {
+                                Event event = doc.toObject(Event.class);
+                                events.add(event);
+                                addEventMarker(event);
                             }
-                        } else {
+                        }
+                        else {
                             Log.w("DB error", "Error getting documents.", task.getException());
                         }
                     }
                 });
     }
 
-    public void addEventMarker(String title, LatLng position){
+    public void addEventMarker(Event event){
         MarkerOptions opt = new MarkerOptions();
-        opt.title(title);
-        opt.position(position);
+        opt.title(event.getTitle());
+        opt.position(event.location());
 
         Marker mark = map.addMarker(opt);
     }
-//    public void addEventMarker(Event event) {
-//        MarkerOptions opt = new MarkerOptions();
-//        opt.title(event.getTitle());
-//        opt.position(event.getLocation());
-//
-//        Marker mark = map.addMarker(opt);
-//        mark.setTag(event);
-//    }
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
@@ -191,13 +180,11 @@ public class DiscoverFragment extends Fragment implements
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         locationPermission = false;
-        switch (requestCode) {
-            case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    locationPermission = true;
-                    setMapLocationEnabled(true);
-                    moveMapToUser();
-                }
+        if (requestCode == PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                locationPermission = true;
+                setMapLocationEnabled(true);
+                moveMapToUser();
             }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -259,8 +246,8 @@ public class DiscoverFragment extends Fragment implements
             }
             setMapLocationEnabled(locationPermission);
 
-            // TODO: delete me
-            addTestEvents();
+            // Add the event markers to the map
+            addEvents();
 
         }
     }

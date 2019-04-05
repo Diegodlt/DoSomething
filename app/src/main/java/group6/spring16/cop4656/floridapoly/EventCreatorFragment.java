@@ -28,6 +28,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -176,20 +177,26 @@ public class EventCreatorFragment extends Fragment implements OnMapReadyCallback
         final String name         = nameText.getText().toString();
         final Date   date         = dateText.getDate();
         final Date   time         = timeText.getTime();
-        final int maxAttendees = Integer.parseInt(maxAttendeesText.getText().toString());
+        final int    maxAttendees = Integer.parseInt(maxAttendeesText.getText().toString());
         final String description  = descriptionText.getText().toString();
 
-        // Combine the two dates into one calendar
+        // Combine the two dates
         Calendar dateCal = Calendar.getInstance();
         Calendar timeCal = Calendar.getInstance();
         dateCal.setTime(date);
         timeCal.setTime(time);
         dateCal.set(Calendar.HOUR_OF_DAY, timeCal.get(Calendar.HOUR_OF_DAY));
         dateCal.set(Calendar.MINUTE, timeCal.get(Calendar.MINUTE));
+        final Date eventDate = dateCal.getTime();
 
         // Send event object to Firestore DB
-        String userId = mAuth.getCurrentUser().getUid();
-        Event event = new Event(name, dateCal, eventLocation.latitude, eventLocation.longitude, maxAttendees, userId );
+        final FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) {
+            Log.w("DB","Null Firebase user");
+            return;
+        }
+        final String userId = user.getUid();
+        final Event event = new Event(name, eventDate, eventLocation, maxAttendees, userId);
         event.setDescription(description);
         db.collection("events")
                 .add(event)
