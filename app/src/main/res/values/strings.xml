@@ -6,6 +6,7 @@
 
     <string name="hint_username">Email</string>
     <string name="hint_password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
     <string name="fName">First Name</string>
     <string name="lName">Last Name</string>
     <string name="email">Email</string>

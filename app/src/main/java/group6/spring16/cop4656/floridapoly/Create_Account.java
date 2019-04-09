@@ -32,11 +32,13 @@ public class Create_Account extends AppCompatActivity {
     private TextView lastNameField;
     private TextView userEmailField;
     private TextView passwordField;
+    private TextView confirmPasswordField;
 
     private String firstName;
     private String lastName;
     private String email;
     private String password;
+    private String confirmPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +52,7 @@ public class Create_Account extends AppCompatActivity {
         lastNameField  = findViewById(R.id.lastName);
         userEmailField = findViewById(R.id.email);
         passwordField  = findViewById(R.id.password);
+        confirmPasswordField = findViewById(R.id.confirmPassword);
         signUpButton   = findViewById(R.id.signUpButton);
 
         signUpButton.setOnClickListener(new View.OnClickListener() {
@@ -58,8 +61,16 @@ public class Create_Account extends AppCompatActivity {
                 getTextFromFields();
 
                 if (!firstName.isEmpty() && !lastName.isEmpty() &&
-                    !email.isEmpty() && !password.isEmpty()) {
-                    createUser();
+                    !email.isEmpty() && !password.isEmpty() && !confirmPassword.isEmpty()) {
+                    if (password.equals(confirmPassword)){
+                        createUser();
+
+                    }
+                    else {
+                        Toast.makeText(Create_Account.this,
+                                "Password fields do not match",
+                                Toast.LENGTH_SHORT).show();
+                    }
                 }
                 else {
                     Toast.makeText(Create_Account.this,
@@ -76,6 +87,7 @@ public class Create_Account extends AppCompatActivity {
         lastName  = lastNameField.getText().toString().trim();
         email     = userEmailField.getText().toString().trim();
         password  = passwordField.getText().toString().trim();
+        confirmPassword = confirmPasswordField.getText().toString().trim();
     }
 
     private void createUser(){
