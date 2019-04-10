@@ -205,6 +205,7 @@ public class EventCreatorFragment extends Fragment implements OnMapReadyCallback
                     public void onSuccess(DocumentReference documentReference) {
                         Log.d("DB", "DocumentSnapshot added with ID: " + documentReference.getId());
                         // TODO: I'm not sure where the app should take the user after an event is created
+                        toastMessage("Event has been created");
                         Intent homeScreen = new Intent(getActivity(), MainScreen.class);
                         startActivity(homeScreen);
                     }
@@ -212,9 +213,13 @@ public class EventCreatorFragment extends Fragment implements OnMapReadyCallback
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
+                        toastMessage("Error creating event");
                         Log.w("DB", "Error adding document", e);
                     }
                 });
+    }
+    public void toastMessage(String message){
+       Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
     }
 
     @Override
