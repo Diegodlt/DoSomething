@@ -3,6 +3,8 @@ package group6.spring16.cop4656.floridapoly;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -104,10 +106,30 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.event_viewer_menu, menu);
+
+        //TODO: check if the user has joined this event and set the join or leave button visible
+        menu.findItem(R.id.event_viewer_join_event).setVisible(true);
+        menu.findItem(R.id.event_viewer_leave_event).setVisible(false);
+
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home: {
                 finish();
+                break;
+            }
+            case R.id.event_viewer_join_event: {
+                //TODO: joinEvent();
+                break;
+            }
+            case R.id.event_viewer_leave_event: {
+                //TODO: leaveEvent();
                 break;
             }
             default: break;

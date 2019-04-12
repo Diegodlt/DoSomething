@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/event_viewer_join_event"
+        android:icon="@drawable/ic_person_add_white_24dp"
+        android:title="Join"
+        app:showAsAction="always"
+        />
+
+    <item
+        android:id="@+id/event_viewer_leave_event"
+        android:icon="@drawable/ic_person_remove_white_24dp"
+        android:title="Leave"
+        app:showAsAction="always"
+        />
+</menu>
