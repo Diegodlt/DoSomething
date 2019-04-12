@@ -37,6 +37,7 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         // Get the event
         event = (Event)getIntent().getSerializableExtra(EXTRA_EVENT);
 
+
         // Create the toolbar
         Toolbar toolbar = findViewById(R.id.event_viewer_toolbar);
         setSupportActionBar(toolbar);
@@ -47,40 +48,46 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
 
+
         // Set the date/time
-        SimpleDateFormat dateFmt = new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault());
-        SimpleDateFormat timeFmt = new SimpleDateFormat("h:mm a", Locale.getDefault());
+        final SimpleDateFormat dateFmt = new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault());
+        final SimpleDateFormat timeFmt = new SimpleDateFormat("h:mm a", Locale.getDefault());
 
         View dateView = findViewById(R.id.event_viewer_date_view);
         View timeView = findViewById(R.id.event_viewer_time_view);
 
-        TextView dateTitle = dateView.findViewById(R.id.title);
+        TextView dateTitle   = dateView.findViewById(R.id.title);
         TextView dateContent = dateView.findViewById(R.id.content);
         dateTitle.setText(R.string.event_date);
         dateContent.setText(dateFmt.format(event.getDate()));
 
-        TextView timeTitle = timeView.findViewById(R.id.title);
+        TextView timeTitle   = timeView.findViewById(R.id.title);
         TextView timeContent = timeView.findViewById(R.id.content);
         timeTitle.setText(R.string.event_time);
         timeContent.setText(timeFmt.format(event.getDate()));
 
+
         // Set the event attendees
         View attendeesView = findViewById(R.id.event_viewer_attendees_view);
-        TextView attendeesTitle = attendeesView.findViewById(R.id.title);
+
+        TextView attendeesTitle   = attendeesView.findViewById(R.id.title);
         TextView attendeesContent = attendeesView.findViewById(R.id.content);
         attendeesTitle.setText(R.string.event_attendees);
 
-        String max = String.valueOf(event.getMaxAttendees());
+        String max     = String.valueOf(event.getMaxAttendees());
         String current = String.valueOf(1); /*TODO: get number of current attendees*/
         final String attendeesString = current + " / " + max;
         attendeesContent.setText(attendeesString);
 
+
         // Set the event description
         View descriptionView = findViewById(R.id.event_viewer_desc_view);
-        TextView descriptionTitle = descriptionView.findViewById(R.id.title);
+
+        TextView descriptionTitle   = descriptionView.findViewById(R.id.title);
         TextView descriptionContent = descriptionView.findViewById(R.id.content);
         descriptionTitle.setText(R.string.event_description);
         descriptionContent.setText(event.getDescription());
+
 
         // Create the map
         mapView = findViewById(R.id.event_viewer_map);
