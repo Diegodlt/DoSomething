@@ -15,6 +15,7 @@
             android:layout_weight="13"
             android:padding="2dp"
             android:layout_gravity="center"
+            android:tint="@color/colorPrimaryDark"
             android:src="@android:drawable/ic_lock_power_off" />
 
         <LinearLayout

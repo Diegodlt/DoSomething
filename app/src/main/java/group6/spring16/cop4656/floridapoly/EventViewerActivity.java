@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -56,6 +57,9 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         View dateView = findViewById(R.id.event_viewer_date_view);
         View timeView = findViewById(R.id.event_viewer_time_view);
 
+        ((ImageView)dateView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_today_black_24dp);
+        ((ImageView)timeView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_time_black_24dp);
+
         TextView dateTitle   = dateView.findViewById(R.id.title);
         TextView dateContent = dateView.findViewById(R.id.content);
         dateTitle.setText(R.string.event_date);
@@ -70,6 +74,8 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         // Set the event attendees
         View attendeesView = findViewById(R.id.event_viewer_attendees_view);
 
+        ((ImageView)attendeesView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_person_black_24dp);
+
         TextView attendeesTitle   = attendeesView.findViewById(R.id.title);
         TextView attendeesContent = attendeesView.findViewById(R.id.content);
         attendeesTitle.setText(R.string.event_attendees);
@@ -82,6 +88,8 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
 
         // Set the event description
         View descriptionView = findViewById(R.id.event_viewer_desc_view);
+
+        ((ImageView)descriptionView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_comment_black_24dp);
 
         TextView descriptionTitle   = descriptionView.findViewById(R.id.title);
         TextView descriptionContent = descriptionView.findViewById(R.id.content);
