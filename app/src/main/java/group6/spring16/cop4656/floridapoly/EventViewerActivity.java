@@ -15,6 +15,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 
 import group6.spring16.cop4656.floridapoly.event.Event;
 
@@ -47,8 +48,8 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         }
 
         // Set the date/time
-        SimpleDateFormat dateFmt = new SimpleDateFormat("EEEE, MMMM d, yyyy");
-        SimpleDateFormat timeFmt = new SimpleDateFormat("h:mm a");
+        SimpleDateFormat dateFmt = new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault());
+        SimpleDateFormat timeFmt = new SimpleDateFormat("h:mm a", Locale.getDefault());
 
         View dateView = findViewById(R.id.event_viewer_date_view);
         View timeView = findViewById(R.id.event_viewer_time_view);

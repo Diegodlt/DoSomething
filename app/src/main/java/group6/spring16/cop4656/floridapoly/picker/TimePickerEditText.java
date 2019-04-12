@@ -9,6 +9,7 @@ import android.widget.TimePicker;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 
 public class TimePickerEditText extends TimePickerFragment {
     private EditText text;
@@ -54,7 +55,7 @@ public class TimePickerEditText extends TimePickerFragment {
     }
 
     public void updateText() {
-        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
+        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat, Locale.getDefault());
         final String date = formatter.format(getCalendar().getTime());
         if (text != null) {
             text.setText(date);

@@ -8,6 +8,7 @@ import android.widget.EditText;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 
 public class DatePickerEditText extends DatePickerFragment {
     private EditText text;
@@ -54,7 +55,7 @@ public class DatePickerEditText extends DatePickerFragment {
     }
 
     public void updateText() {
-        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
+        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat, Locale.getDefault());
         final String date = formatter.format(getCalendar().getTime());
         if (text != null) {
             text.setText(date);
