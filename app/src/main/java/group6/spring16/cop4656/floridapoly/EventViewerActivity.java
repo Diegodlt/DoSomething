@@ -56,19 +56,19 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
 
         TextView dateTitle = dateView.findViewById(R.id.title);
         TextView dateContent = dateView.findViewById(R.id.content);
-        dateTitle.setText("Date");
+        dateTitle.setText(R.string.event_date);
         dateContent.setText(dateFmt.format(event.getDate()));
 
         TextView timeTitle = timeView.findViewById(R.id.title);
         TextView timeContent = timeView.findViewById(R.id.content);
-        timeTitle.setText("Time");
+        timeTitle.setText(R.string.event_time);
         timeContent.setText(timeFmt.format(event.getDate()));
 
         // Set the event attendees
         View attendeesView = findViewById(R.id.event_viewer_attendees_view);
         TextView attendeesTitle = attendeesView.findViewById(R.id.title);
         TextView attendeesContent = attendeesView.findViewById(R.id.content);
-        attendeesTitle.setText("Attendees");
+        attendeesTitle.setText(R.string.event_attendees);
 
         String max = String.valueOf(event.getMaxAttendees());
         String current = String.valueOf(1); /*TODO: get number of current attendees*/
@@ -79,7 +79,7 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         View descriptionView = findViewById(R.id.event_viewer_desc_view);
         TextView descriptionTitle = descriptionView.findViewById(R.id.title);
         TextView descriptionContent = descriptionView.findViewById(R.id.content);
-        descriptionTitle.setText("Description");
+        descriptionTitle.setText(R.string.event_description);
         descriptionContent.setText(event.getDescription());
 
         // Create the map

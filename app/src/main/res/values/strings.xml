@@ -1,9 +1,18 @@
 <resources>
     <string name="app_name">Do Something</string>
 
+    <!--Activity/Fragment Title strings-->
+    <string name="title_activity_login_">Login_Activity</string>
+    <string name="home_title">Home</string>
+    <string name="discover_title">Discover</string>
+    <string name="event_creator_title">Event Creator</string>
+    <string name="settings_title">Settings</string>
+
+    <!--Launch Screen strings-->
     <string name="login">Login</string>
     <string name="signUp">Sign Up</string>
 
+    <!--Login/Signup strings-->
     <string name="hint_username">Email</string>
     <string name="hint_password">Password</string>
     <string name="confirm_password">Confirm Password</string>
@@ -15,23 +24,18 @@
     <string name="back">Back</string>
     <string name="signOut">Sign Out</string>
 
-    <string name="title_activity_login_">Login_Activity</string>
-    <string name="home_title">Home</string>
-    <string name="discover_title">Discover</string>
-    <string name="event_creator_title">Event Creator</string>
-    <string name="settings_title">Settings</string>
-
     <string name="picture_edit">Tap picture to edit</string>
     <string name="dialog_select_photo">SelectPhotoDialog</string>
 
-    <!--Event Creator strings-->
-    <string name="event_creator_event_name">Event Name</string>
-    <string name="event_creator_date">Date</string>
-    <string name="event_creator_time">Time</string>
-    <string name="event_creator_max_attendees">Max Attendees</string>
-    <string name="event_creator_description">Description</string>
-    <string name="event_creator_location_button">Set Location</string>
-    <string name="event_creator_create_event_button">Create Event</string>
+    <!--Event strings-->
+    <string name="event_name">Event Name</string>
+    <string name="event_date">Date</string>
+    <string name="event_time">Time</string>
+    <string name="event_attendees">Attendees</string>
+    <string name="event_max_attendees">Max Attendees</string>
+    <string name="event_description">Description</string>
+    <string name="event_set_location_button">Set Location</string>
+    <string name="event_create_event_button">Create Event</string>
 
     <string name="choose_photo_from_memory">Choose photo from memory</string>
     <string name="take_a_photo">Take a Photo</string>
