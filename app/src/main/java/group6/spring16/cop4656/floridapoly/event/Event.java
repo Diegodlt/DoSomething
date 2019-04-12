@@ -2,6 +2,7 @@ package group6.spring16.cop4656.floridapoly.event;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -11,7 +12,7 @@ import java.util.Map;
 import java.util.UUID;
 
 
-public class Event {
+public class Event implements Serializable {
     private String   userId;
     private String   title;
     private Date     dateTime;

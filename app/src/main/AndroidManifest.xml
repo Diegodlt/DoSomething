@@ -15,6 +15,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
+        <activity android:name=".EventViewerActivity"></activity>
         <activity android:name=".LocationSelectorActivity" />
         <activity android:name=".MainScreen" />
         <activity android:name=".Create_Account" />
@@ -22,6 +23,7 @@
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

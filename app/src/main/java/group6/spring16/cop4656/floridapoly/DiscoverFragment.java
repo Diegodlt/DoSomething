@@ -2,6 +2,7 @@ package group6.spring16.cop4656.floridapoly;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.net.Uri;
@@ -53,8 +54,13 @@ public class DiscoverFragment extends Fragment implements
         OnMapReadyCallback,
         GoogleMap.OnMarkerClickListener {
 
-    // Constants
+    // Constants - Tag
     private final String TAG = this.getClass().getSimpleName();
+
+    // Constants - Intent extras
+    private final String EXTRA_EVENT = "event";
+
+    // Constants - Map
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private static final int DEFAULT_ZOOM = 12;
     private static final LatLng DEFAULT_LOCATION = new LatLng(40.7127, -74.0059); //NYC
@@ -148,12 +154,19 @@ public class DiscoverFragment extends Fragment implements
         opt.position(event.location());
 
         Marker mark = map.addMarker(opt);
+        mark.setTag(event);
     }
 
     @Override
     public boolean onMarkerClick(final Marker marker) {
-//        final Event event = (Event)marker.getTag();
+        final Event event = (Event)marker.getTag();
+
         Toast.makeText(getActivity(), "Clicked " + marker.getTitle(), Toast.LENGTH_SHORT).show();
+
+        // Start the event viewer
+        Intent intent = new Intent(getActivity(), EventViewerActivity.class);
+        intent.putExtra(EXTRA_EVENT, event);
+        startActivity(intent);
 
         // Return false to indicate that we have not consumed the event and that we wish
         // for the default behavior to occur (which is for the camera to move such that the
