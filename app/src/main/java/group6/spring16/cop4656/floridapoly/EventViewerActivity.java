@@ -138,16 +138,24 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
                 break;
             }
             case R.id.event_viewer_join_event: {
-                //TODO: joinEvent();
+                joinEvent();
                 break;
             }
             case R.id.event_viewer_leave_event: {
-                //TODO: leaveEvent();
+                leaveEvent();
                 break;
             }
             default: break;
         }
         return true;
+    }
+
+    private void joinEvent() {
+        //TODO: join the event
+    }
+
+    private void leaveEvent() {
+        //TODO: leave the event
     }
 
     @Override
