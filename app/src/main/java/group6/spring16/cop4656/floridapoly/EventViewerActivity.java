@@ -15,6 +15,8 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -27,8 +29,14 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
 
     private static final String EXTRA_EVENT = "event";
 
+    // The event to display the details of
     private Event event;
 
+    // Firebase
+    private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
+
+    // Google Maps
     private MapView mapView;
     private GoogleMap map;
 
@@ -39,6 +47,11 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
 
         // Get the event
         event = (Event)getIntent().getSerializableExtra(EXTRA_EVENT);
+
+
+        // Initialize database and auth objects
+        db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
 
 
         // Create the toolbar
