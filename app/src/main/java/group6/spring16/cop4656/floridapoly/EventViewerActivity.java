@@ -16,6 +16,7 @@ import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
@@ -25,12 +26,17 @@ import java.util.Locale;
 import group6.spring16.cop4656.floridapoly.event.Event;
 
 //TODO: add the ability to join an event
+//TODO: enable editing when the user is the host
+
 public class EventViewerActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     private static final String EXTRA_EVENT = "event";
 
     // The event to display the details of
     private Event event;
+
+    // Is the current user the event host?
+    private boolean eventHost = false;
 
     // Firebase
     private FirebaseFirestore db;
@@ -52,6 +58,12 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         // Initialize database and auth objects
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
+
+        // Check if the user is the event host
+        final FirebaseUser user = mAuth.getCurrentUser();
+        if (user != null && event.getUserId().equals(user.getUid())) {
+            eventHost = true;
+        }
 
 
         // Create the toolbar
