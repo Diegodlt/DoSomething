@@ -34,7 +34,6 @@ import java.util.Locale;
 
 import group6.spring16.cop4656.floridapoly.event.Event;
 
-//TODO: add the ability to join an event
 //TODO: enable editing when the user is the host
 
 public class EventViewerActivity extends AppCompatActivity implements OnMapReadyCallback {
