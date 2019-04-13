@@ -1,5 +1,7 @@
 package group6.spring16.cop4656.floridapoly;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -7,6 +9,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -155,6 +158,22 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
             }
             case R.id.event_viewer_leave_event: {
                 leaveEvent();
+                break;
+            }
+            case R.id.event_viewer_open_maps: {
+                final String url = "https://www.google.com/maps/search/?api=1&query="
+                        + event.getLatitude() + "%2C" + event.getLongitude();
+
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                startActivity(intent);
+                break;
+            }
+            case R.id.event_viewer_directions: {
+                final String url = "https://www.google.com/maps/dir/?api=1&destination="
+                                   + event.getLatitude() + "%2C" + event.getLongitude();
+
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                startActivity(intent);
                 break;
             }
             default: break;
