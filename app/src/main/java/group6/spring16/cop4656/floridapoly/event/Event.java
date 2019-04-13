@@ -13,36 +13,46 @@ import java.util.UUID;
 
 
 public class Event implements Serializable {
-    private String   userId;
-    private String   title;
-    private Date     dateTime;
-    private String   description;
-    private int      maxAttendees;
+    private String eventId;
+    private String hostId;
+
+    private String title;
+    private Date   dateTime;
+    private String description;
+    private int    maxAttendees;
 
     // Location
     private double latitude;
     private double longitude;
 
-    //private List<EventRequirement> requirements = new ArrayList<>();
-    //private List<User> attendees = new ArrayList<>();
-
+    private List<String> attendees = new ArrayList<>();
 
     // Firestore requires a no-arg constructor for custom objects
     public Event() {
 
     }
 
-    public Event(String title, Date dateTime, LatLng location, int maxAttendees, String userId) {
+    public Event(String eventId, String hostId, String title, Date dateTime, LatLng location, int maxAttendees) {
         this.title = title;
         this.dateTime = dateTime;
         this.latitude = location.latitude;
         this.longitude = location.longitude;
         this.maxAttendees = maxAttendees;
-        this.userId = userId;
+        this.eventId = eventId;
+        this.hostId = hostId;
     }
 
-    public String getUserId() {
-        return userId;
+    public Event(String eventId, String hostId, String title, Date dateTime, LatLng location, int maxAttendees, String description) {
+        this(eventId, hostId, title, dateTime, location, maxAttendees);
+        this.description = description;
+    }
+
+    public String getEventId() {
+        return eventId;
+    }
+
+    public String getHostId() {
+        return hostId;
     }
 
     public String getTitle() {
@@ -95,5 +105,17 @@ public class Event implements Serializable {
 
     public void setMaxAttendees(int maxAttendees) {
         this.maxAttendees = maxAttendees;
+    }
+
+    public List<String> getAttendees() {
+        return attendees;
+    }
+
+    public void addAttendee(String user) {
+        attendees.add(user);
+    }
+
+    public void removeAttendee(String user) {
+        attendees.remove(user);
     }
 }

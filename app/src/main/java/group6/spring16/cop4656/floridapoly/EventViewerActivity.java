@@ -2,9 +2,11 @@ package group6.spring16.cop4656.floridapoly;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -12,12 +14,15 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -40,6 +45,8 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
 
     // Is the current user the event host?
     private boolean eventHost = false;
+
+    private Menu toolbarMenu;
 
     // Firebase
     private FirebaseFirestore db;
@@ -64,7 +71,7 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
 
         // Check if the user is the event host
         final FirebaseUser user = mAuth.getCurrentUser();
-        if (user != null && event.getUserId().equals(user.getUid())) {
+        if (user != null && event.getHostId().equals(user.getUid())) {
             eventHost = true;
         }
 
@@ -102,18 +109,7 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
 
 
         // Set the event attendees
-        View attendeesView = findViewById(R.id.event_viewer_attendees_view);
-
-        ((ImageView)attendeesView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_person_black_24dp);
-
-        TextView attendeesTitle   = attendeesView.findViewById(R.id.title);
-        TextView attendeesContent = attendeesView.findViewById(R.id.content);
-        attendeesTitle.setText(R.string.event_attendees);
-
-        String max     = String.valueOf(event.getMaxAttendees());
-        String current = String.valueOf(1); /*TODO: get number of current attendees*/
-        final String attendeesString = current + " / " + max;
-        attendeesContent.setText(attendeesString);
+        updateAttendees();
 
 
         // Set the event description
@@ -137,12 +133,46 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.event_viewer_menu, menu);
-
-        //TODO: check if the user has joined this event and set the join or leave button visible
-        menu.findItem(R.id.event_viewer_join_event).setVisible(true);
-        menu.findItem(R.id.event_viewer_leave_event).setVisible(false);
-
+        toolbarMenu = menu;
+        updateToolbarMenu();
         return true;
+    }
+
+    private void updateToolbarMenu() {
+        final FirebaseUser user = mAuth.getCurrentUser();
+
+        MenuItem joinButton  = toolbarMenu.findItem(R.id.event_viewer_join_event);
+        MenuItem leaveButton = toolbarMenu.findItem(R.id.event_viewer_leave_event);
+
+        if (eventHost) {
+            joinButton.setVisible(false);
+            leaveButton.setVisible(false);
+        }
+        else if (event != null && user != null) {
+            if (event.getAttendees().contains(user.getUid())) {
+                joinButton.setVisible(false);
+                leaveButton.setVisible(true);
+            }
+            else {
+                joinButton.setVisible(true);
+                leaveButton.setVisible(false);
+            }
+        }
+    }
+
+    private void updateAttendees() {
+        View attendeesView = findViewById(R.id.event_viewer_attendees_view);
+
+        ((ImageView)attendeesView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_person_black_24dp);
+
+        TextView attendeesTitle   = attendeesView.findViewById(R.id.title);
+        TextView attendeesContent = attendeesView.findViewById(R.id.content);
+        attendeesTitle.setText(R.string.event_attendees);
+
+        String max     = String.valueOf(event.getMaxAttendees());
+        String current = String.valueOf(event.getAttendees().size());
+        final String attendeesString = current + " / " + max;
+        attendeesContent.setText(attendeesString);
     }
 
     @Override
@@ -182,11 +212,55 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
     }
 
     private void joinEvent() {
-        //TODO: join the event
+        final FirebaseUser user = mAuth.getCurrentUser();
+
+        if (!eventHost && user != null && !event.getAttendees().contains(user.getUid())) {
+            event.addAttendee(user.getUid());
+            db.collection("events")
+                    .document(event.getEventId())
+                    .set(event)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Toast.makeText(EventViewerActivity.this, "Joined event", Toast.LENGTH_SHORT).show();
+                            updateToolbarMenu();
+                            updateAttendees();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.e("DB", "Failed to join event", e);
+                            event.removeAttendee(user.getUid());
+                        }
+                    });
+        }
     }
 
     private void leaveEvent() {
-        //TODO: leave the event
+        final FirebaseUser user = mAuth.getCurrentUser();
+
+        if (!eventHost && user != null && event.getAttendees().contains(user.getUid())) {
+            event.removeAttendee(user.getUid());
+            db.collection("events")
+                    .document(event.getEventId())
+                    .set(event)
+                    .addOnSuccessListener(new OnSuccessListener<Void>() {
+                        @Override
+                        public void onSuccess(Void aVoid) {
+                            Toast.makeText(EventViewerActivity.this, "Left event", Toast.LENGTH_SHORT).show();
+                            updateToolbarMenu();
+                            updateAttendees();
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Log.e("DB", "Failed to leave event", e);
+                            event.addAttendee(user.getUid());
+                        }
+                    });
+        }
     }
 
     @Override

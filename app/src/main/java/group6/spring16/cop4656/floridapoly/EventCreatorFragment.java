@@ -34,6 +34,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import group6.spring16.cop4656.floridapoly.event.Event;
 import group6.spring16.cop4656.floridapoly.picker.DatePickerEditText;
@@ -195,15 +196,17 @@ public class EventCreatorFragment extends Fragment implements OnMapReadyCallback
             Log.w("DB","Null Firebase user");
             return;
         }
+        final String eventId = UUID.randomUUID().toString();
         final String userId = user.getUid();
-        final Event event = new Event(name, eventDate, eventLocation, maxAttendees, userId);
-        event.setDescription(description);
+        final Event event = new Event(eventId, userId, name, eventDate, eventLocation, maxAttendees, description);
+
         db.collection("events")
-                .add(event)
-                .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                .document(eventId)
+                .set(event)
+                .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
-                    public void onSuccess(DocumentReference documentReference) {
-                        Log.d("DB", "DocumentSnapshot added with ID: " + documentReference.getId());
+                    public void onSuccess(Void aVoid) {
+                        Log.d("DB", "DocumentSnapshot added with ID: " + eventId);
                         // TODO: I'm not sure where the app should take the user after an event is created
                         toastMessage("Event has been created");
                         Intent homeScreen = new Intent(getActivity(), MainScreen.class);
