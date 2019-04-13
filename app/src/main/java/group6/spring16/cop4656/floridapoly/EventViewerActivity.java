@@ -25,6 +25,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
@@ -216,6 +217,7 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
 
         if (!eventHost && user != null && !event.getAttendees().contains(user.getUid())) {
             event.addAttendee(user.getUid());
+
             db.collection("events")
                     .document(event.getEventId())
                     .set(event)
@@ -225,6 +227,11 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
                             Toast.makeText(EventViewerActivity.this, "Joined event", Toast.LENGTH_SHORT).show();
                             updateToolbarMenu();
                             updateAttendees();
+
+                            // Add the event to the user's "attending" array
+                            db.collection("users")
+                                    .document(user.getUid())
+                                    .update("attending", FieldValue.arrayUnion(event.getEventId()));
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
@@ -242,6 +249,7 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
 
         if (!eventHost && user != null && event.getAttendees().contains(user.getUid())) {
             event.removeAttendee(user.getUid());
+
             db.collection("events")
                     .document(event.getEventId())
                     .set(event)
@@ -251,6 +259,11 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
                             Toast.makeText(EventViewerActivity.this, "Left event", Toast.LENGTH_SHORT).show();
                             updateToolbarMenu();
                             updateAttendees();
+
+                            // Remove the event from the user's "attending" array
+                            db.collection("users")
+                                    .document(user.getUid())
+                                    .update("attending", FieldValue.arrayRemove(event.getEventId()));
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {

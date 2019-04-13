@@ -27,6 +27,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.SetOptions;
 
@@ -207,6 +208,12 @@ public class EventCreatorFragment extends Fragment implements OnMapReadyCallback
                     @Override
                     public void onSuccess(Void aVoid) {
                         Log.d("DB", "DocumentSnapshot added with ID: " + eventId);
+
+                        // Add the event to the user's "hosting" array
+                        db.collection("users")
+                                .document(userId)
+                                .update("hosting", FieldValue.arrayUnion(eventId));
+
                         // TODO: I'm not sure where the app should take the user after an event is created
                         toastMessage("Event has been created");
                         Intent homeScreen = new Intent(getActivity(), MainScreen.class);
