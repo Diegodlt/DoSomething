@@ -161,8 +161,6 @@ public class DiscoverFragment extends Fragment implements
     public boolean onMarkerClick(final Marker marker) {
         final Event event = (Event)marker.getTag();
 
-        Toast.makeText(getActivity(), "Clicked " + marker.getTitle(), Toast.LENGTH_SHORT).show();
-
         // Start the event viewer
         Intent intent = new Intent(getActivity(), EventViewerActivity.class);
         intent.putExtra(EXTRA_EVENT, event);
