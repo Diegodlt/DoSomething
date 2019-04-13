@@ -128,7 +128,6 @@ public class DiscoverFragment extends Fragment implements
     }
 
     private void addEvents() {
-
         db.collection("events")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -148,7 +147,7 @@ public class DiscoverFragment extends Fragment implements
                 });
     }
 
-    public void addEventMarker(Event event){
+    private void addEventMarker(@NonNull Event event) {
         MarkerOptions opt = new MarkerOptions();
         opt.title(event.getTitle());
         opt.position(event.location());
