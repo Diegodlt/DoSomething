@@ -149,7 +149,7 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
             leaveButton.setVisible(false);
         }
         else if (event != null && user != null) {
-            if (event.getAttendees().contains(user.getUid())) {
+            if (event.isUserAttending(user.getUid())) {
                 joinButton.setVisible(false);
                 leaveButton.setVisible(true);
             }
@@ -170,7 +170,7 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         attendeesTitle.setText(R.string.event_attendees);
 
         String max     = String.valueOf(event.getMaxAttendees());
-        String current = String.valueOf(event.getAttendees().size());
+        String current = String.valueOf(event.numCurrentAttendees());
         final String attendeesString = current + " / " + max;
         attendeesContent.setText(attendeesString);
     }
@@ -212,9 +212,16 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
     }
 
     private void joinEvent() {
+        if (event.isFull()) {
+            Toast.makeText(EventViewerActivity.this,
+                    "Failed to join: event is full",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         final FirebaseUser user = mAuth.getCurrentUser();
 
-        if (!eventHost && user != null && !event.getAttendees().contains(user.getUid())) {
+        if (!eventHost && user != null && !event.isUserAttending(user.getUid())) {
             event.addAttendee(user.getUid());
 
             db.collection("events")
@@ -236,6 +243,10 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(EventViewerActivity.this,
+                                    "Failed to join event: server error",
+                                    Toast.LENGTH_SHORT).show();
+
                             Log.e("DB", "Failed to join event", e);
                             event.removeAttendee(user.getUid());
                         }
@@ -246,7 +257,7 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
     private void leaveEvent() {
         final FirebaseUser user = mAuth.getCurrentUser();
 
-        if (!eventHost && user != null && event.getAttendees().contains(user.getUid())) {
+        if (!eventHost && user != null && event.isUserAttending(user.getUid())) {
             event.removeAttendee(user.getUid());
 
             db.collection("events")

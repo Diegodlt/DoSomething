@@ -107,8 +107,8 @@ public class Event implements Serializable {
         this.maxAttendees = maxAttendees;
     }
 
-    public List<String> getAttendees() {
-        return attendees;
+    public boolean isUserAttending(String userId) {
+        return attendees.contains(userId);
     }
 
     public void addAttendee(String user) {
@@ -117,5 +117,13 @@ public class Event implements Serializable {
 
     public void removeAttendee(String user) {
         attendees.remove(user);
+    }
+
+    public int numCurrentAttendees() {
+        return attendees.size();
+    }
+
+    public boolean isFull() {
+        return attendees.size() == maxAttendees;
     }
 }
