@@ -108,7 +108,7 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
     }
 
     @Override
-    public View onCreateView(final LayoutInflater inflater, @Nullable ViewGroup container,
+    public View onCreateView(final @NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
 
         // Inflate the layout for this fragment

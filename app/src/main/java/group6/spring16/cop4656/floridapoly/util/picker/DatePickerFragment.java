@@ -18,6 +18,7 @@ abstract public class DatePickerFragment extends AppCompatDialogFragment impleme
     LocalDate date;
 
     @Override
+    @NonNull
     public Dialog onCreateDialog(@NonNull Bundle savedInstanceState) {
         // Use the current date as the default date in the picker
         c = Calendar.getInstance();

@@ -16,6 +16,7 @@ abstract public class TimePickerFragment extends AppCompatDialogFragment impleme
     private Calendar c;
 
     @Override
+    @NonNull
     public Dialog onCreateDialog(@NonNull Bundle savedInstanceState) {
         // Use the current time as the default time in the picker
         c = Calendar.getInstance();
