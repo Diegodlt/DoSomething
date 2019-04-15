@@ -74,11 +74,11 @@ public class DiscoverFragment extends Fragment implements
     private Location lastLocation;
 
     // List of events
-    List<Event> events = new ArrayList<>();
+    private List<Event> events = new ArrayList<>();
 
     // DB and Auth config
-    FirebaseFirestore db;
-    FirebaseAuth mAuth;
+    private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
 
 
     public DiscoverFragment() {

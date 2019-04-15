@@ -252,7 +252,7 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
     }
 
     // Method to convert the Bitmap picture to an array of bytes
-    public static byte[] getBytesFromBitmap(Bitmap bitmap, int quality){
+    private static byte[] getBytesFromBitmap(Bitmap bitmap, int quality){
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, quality,stream);
         return stream.toByteArray();

@@ -34,7 +34,7 @@ public class SelectPhotoDialog extends DialogFragment{
     }
 
     //Interface object
-    OnPhotoSelectedListener mOnPhotoSelectedListener;
+    private OnPhotoSelectedListener mOnPhotoSelectedListener;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

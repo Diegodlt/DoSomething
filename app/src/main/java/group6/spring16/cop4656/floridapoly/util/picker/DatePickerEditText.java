@@ -54,7 +54,7 @@ public class DatePickerEditText extends DatePickerFragment {
         updateText();
     }
 
-    public void updateText() {
+    private void updateText() {
         SimpleDateFormat formatter = new SimpleDateFormat(dateFormat, Locale.getDefault());
         final String date = formatter.format(getCalendar().getTime());
         if (text != null) {

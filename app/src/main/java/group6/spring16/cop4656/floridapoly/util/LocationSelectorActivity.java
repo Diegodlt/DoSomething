@@ -85,7 +85,7 @@ public class LocationSelectorActivity extends AppCompatActivity implements OnMap
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
     }
 
-    protected void returnLocation(int resultCode) {
+    private void returnLocation(int resultCode) {
         Intent intent = new Intent();
         setResult(resultCode, intent);
         if (resultCode == RESULT_OK) {
