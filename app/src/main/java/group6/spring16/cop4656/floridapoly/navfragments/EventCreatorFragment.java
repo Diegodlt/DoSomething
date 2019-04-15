@@ -1,4 +1,4 @@
-package group6.spring16.cop4656.floridapoly;
+package group6.spring16.cop4656.floridapoly.navfragments;
 
 import android.app.Activity;
 import android.content.Context;
@@ -26,20 +26,19 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.SetOptions;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.UUID;
 
+import group6.spring16.cop4656.floridapoly.util.LocationSelectorActivity;
+import group6.spring16.cop4656.floridapoly.MainScreen;
+import group6.spring16.cop4656.floridapoly.R;
 import group6.spring16.cop4656.floridapoly.event.Event;
-import group6.spring16.cop4656.floridapoly.picker.DatePickerEditText;
-import group6.spring16.cop4656.floridapoly.picker.TimePickerEditText;
+import group6.spring16.cop4656.floridapoly.util.picker.DatePickerEditText;
+import group6.spring16.cop4656.floridapoly.util.picker.TimePickerEditText;
 
 
 /**

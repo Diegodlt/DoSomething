@@ -15,8 +15,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme.NoActionBar">
-        <activity android:name=".EventViewerActivity"></activity>
-        <activity android:name=".LocationSelectorActivity" />
+        <activity android:name=".event.EventViewerActivity"></activity>
+        <activity android:name=".util.LocationSelectorActivity" />
         <activity android:name=".MainScreen" />
         <activity android:name=".Create_Account" />
         <activity android:name=".Login_Activity" />

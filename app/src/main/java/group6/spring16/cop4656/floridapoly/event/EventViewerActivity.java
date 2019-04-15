@@ -1,4 +1,4 @@
-package group6.spring16.cop4656.floridapoly;
+package group6.spring16.cop4656.floridapoly.event;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -11,7 +11,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -29,10 +28,9 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Locale;
 
-import group6.spring16.cop4656.floridapoly.event.Event;
+import group6.spring16.cop4656.floridapoly.R;
 
 //TODO: enable editing when the user is the host
 

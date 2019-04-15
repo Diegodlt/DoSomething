@@ -1,4 +1,4 @@
-package group6.spring16.cop4656.floridapoly;
+package group6.spring16.cop4656.floridapoly.util;
 
 import android.app.Activity;
 import android.content.Context;
@@ -16,6 +16,8 @@ import android.widget.TextView;
 import android.support.v4.app.DialogFragment;
 
 import java.io.IOException;
+
+import group6.spring16.cop4656.floridapoly.R;
 
 
 public class SelectPhotoDialog extends DialogFragment{

@@ -1,4 +1,4 @@
-package group6.spring16.cop4656.floridapoly.picker;
+package group6.spring16.cop4656.floridapoly.util.picker;
 
 import android.app.Dialog;
 import android.os.Bundle;

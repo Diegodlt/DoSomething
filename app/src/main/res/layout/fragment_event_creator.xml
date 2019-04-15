@@ -4,7 +4,7 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".EventCreatorFragment">
+    tools:context=".navfragments.EventCreatorFragment">
 
     <LinearLayout
         android:id="@+id/event_creator_details_layout"

@@ -1,4 +1,4 @@
-package group6.spring16.cop4656.floridapoly;
+package group6.spring16.cop4656.floridapoly.navfragments;
 
 import android.Manifest;
 import android.content.Context;
@@ -33,6 +33,9 @@ import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import group6.spring16.cop4656.floridapoly.R;
+import group6.spring16.cop4656.floridapoly.util.SelectPhotoDialog;
+
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
@@ -41,7 +44,7 @@ import java.io.IOException;
  * Use the {@link SettingsFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPhotoSelectedListener{
+public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPhotoSelectedListener {
 
     @Override
     public void getImagePath(Uri imagePath) throws IOException {

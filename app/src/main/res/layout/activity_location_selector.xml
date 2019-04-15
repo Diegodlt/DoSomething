@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".LocationSelectorActivity">
+    tools:context=".util.LocationSelectorActivity">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/location_selector_toolbar"

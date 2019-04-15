@@ -1,4 +1,4 @@
-package group6.spring16.cop4656.floridapoly;
+package group6.spring16.cop4656.floridapoly.navfragments;
 
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +13,9 @@ import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
+import group6.spring16.cop4656.floridapoly.MainActivity;
+import group6.spring16.cop4656.floridapoly.R;
 
 
 /**

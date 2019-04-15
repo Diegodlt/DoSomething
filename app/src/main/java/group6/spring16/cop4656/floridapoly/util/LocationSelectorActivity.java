@@ -1,4 +1,4 @@
-package group6.spring16.cop4656.floridapoly;
+package group6.spring16.cop4656.floridapoly.util;
 
 import android.Manifest;
 import android.app.Activity;
@@ -37,6 +37,8 @@ import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import group6.spring16.cop4656.floridapoly.R;
 
 public class LocationSelectorActivity extends AppCompatActivity implements OnMapReadyCallback {
 

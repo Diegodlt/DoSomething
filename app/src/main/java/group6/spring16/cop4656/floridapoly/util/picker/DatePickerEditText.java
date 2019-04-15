@@ -1,19 +1,18 @@
-package group6.spring16.cop4656.floridapoly.picker;
+package group6.spring16.cop4656.floridapoly.util.picker;
 
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.view.View;
+import android.widget.DatePicker;
 import android.widget.EditText;
-import android.widget.TimePicker;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Locale;
 
-public class TimePickerEditText extends TimePickerFragment {
+public class DatePickerEditText extends DatePickerFragment {
     private EditText text;
-    private String dateFormat = "h:mm a";
+    private String   dateFormat = "EEEE, MMMM d, yyyy";
 
     public void setEditText(final FragmentManager fragmentManager, EditText t) {
         text = t;
@@ -21,7 +20,7 @@ public class TimePickerEditText extends TimePickerFragment {
             @Override
             public void onClick(View v) {
                 if (fragmentManager != null) {
-                    TimePickerEditText.super.show(fragmentManager, "timePicker");
+                    DatePickerEditText.super.show(fragmentManager, "datePicker");
                 }
             }
         });
@@ -48,9 +47,10 @@ public class TimePickerEditText extends TimePickerFragment {
     }
 
     @Override
-    public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-        getCalendar().set(Calendar.HOUR_OF_DAY, hourOfDay);
-        getCalendar().set(Calendar.MINUTE, minute);
+    public void onDateSet(DatePicker view, int year, int month, int day) {
+        getCalendar().set(Calendar.YEAR, year);
+        getCalendar().set(Calendar.MONTH, month);
+        getCalendar().set(Calendar.DAY_OF_MONTH, day);
         updateText();
     }
 
