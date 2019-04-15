@@ -42,7 +42,6 @@ public class HomeFragment extends Fragment {
     // User data
     private FirebaseAuth mAuth;
     private FirebaseUser mUser;
-    private Button signOutButton;
     private TextView username;
 
     public HomeFragment() {
@@ -85,21 +84,12 @@ public class HomeFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         mUser = mAuth.getCurrentUser();
 
-        signOutButton = view.findViewById(R.id.signOutButton);
         username = view.findViewById(R.id.username);
 
         if (mUser != null) {
             username.setText(mUser.getEmail());
         }
 
-        signOutButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            mAuth.signOut();
-            Intent mainScreen = new Intent(getActivity(), MainActivity.class);
-            startActivity(mainScreen);
-            }
-        });
 
         return view;
     }
