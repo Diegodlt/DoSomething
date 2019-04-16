@@ -6,11 +6,14 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,6 +40,8 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import group6.spring16.cop4656.floridapoly.R;
+import group6.spring16.cop4656.floridapoly.util.picker.DatePickerEditText;
+import group6.spring16.cop4656.floridapoly.util.picker.TimePickerEditText;
 
 //TODO: enable editing when the user is the host
 
@@ -55,6 +60,10 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
     private boolean modified = false;
 
     private Menu toolbarMenu;
+    private MenuItem joinButton;
+    private MenuItem leaveButton;
+    private MenuItem editButton;
+    private MenuItem saveButton;
 
     // Firebase
     private FirebaseFirestore db;
@@ -64,6 +73,24 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
     // Google Maps
     private MapView mapView;
     private GoogleMap map;
+
+    private View dateView;
+    private TextView dateTitle;
+    private EditText dateContent;
+    private DatePickerEditText datePicker;
+
+    private View timeView;
+    private TextView timeTitle;
+    private EditText timeContent;
+    private TimePickerEditText timePicker;
+
+    private View attendeesView;
+    private TextView attendeesTitle;
+    private TextView attendeesContent;
+
+    private View descriptionView;
+    private TextView descriptionTitle;
+    private EditText descriptionContent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,34 +128,53 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         final SimpleDateFormat dateFmt = new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault());
         final SimpleDateFormat timeFmt = new SimpleDateFormat("h:mm a", Locale.getDefault());
 
-        View dateView = findViewById(R.id.event_viewer_date_view);
-        View timeView = findViewById(R.id.event_viewer_time_view);
+        dateView = findViewById(R.id.event_viewer_date_view);
+        timeView = findViewById(R.id.event_viewer_time_view);
 
         ((ImageView)dateView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_today_black_24dp);
         ((ImageView)timeView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_time_black_24dp);
 
-        TextView dateTitle   = dateView.findViewById(R.id.title);
-        TextView dateContent = dateView.findViewById(R.id.content);
+        dateTitle   = dateView.findViewById(R.id.title);
+        dateContent = dateView.findViewById(R.id.content);
         dateTitle.setText(R.string.event_date);
         dateContent.setText(dateFmt.format(event.getDate()));
 
-        TextView timeTitle   = timeView.findViewById(R.id.title);
-        TextView timeContent = timeView.findViewById(R.id.content);
+
+        // Create the date picker
+        datePicker = new DatePickerEditText();
+        datePicker.setEditText(getSupportFragmentManager(), dateContent);
+
+        timeTitle   = timeView.findViewById(R.id.title);
+        timeContent = timeView.findViewById(R.id.content);
         timeTitle.setText(R.string.event_time);
         timeContent.setText(timeFmt.format(event.getDate()));
 
 
+        // Create the time picker
+        timePicker = new TimePickerEditText();
+        timePicker.setEditText(getSupportFragmentManager(), timeContent);
+
+
         // Set the event attendees
+        attendeesView = findViewById(R.id.event_viewer_attendees_view);
+
+        ((ImageView)attendeesView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_person_black_24dp);
+
+        attendeesTitle   = attendeesView.findViewById(R.id.title);
+        attendeesContent = attendeesView.findViewById(R.id.content);
+        attendeesTitle.setText(R.string.event_attendees);
+        attendeesContent.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
+
         updateAttendees();
 
 
         // Set the event description
-        View descriptionView = findViewById(R.id.event_viewer_desc_view);
+        descriptionView = findViewById(R.id.event_viewer_desc_view);
 
         ((ImageView)descriptionView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_comment_black_24dp);
 
-        TextView descriptionTitle   = descriptionView.findViewById(R.id.title);
-        TextView descriptionContent = descriptionView.findViewById(R.id.content);
+        descriptionTitle   = descriptionView.findViewById(R.id.title);
+        descriptionContent = descriptionView.findViewById(R.id.content);
         descriptionTitle.setText(R.string.event_description);
         descriptionContent.setText(event.getDescription());
 
@@ -137,6 +183,10 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         mapView = findViewById(R.id.event_viewer_map);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
+
+
+        // Disable editing by default
+        setEditable(false);
     }
 
     private void finishViewer() {
@@ -154,40 +204,109 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         toolbarMenu = menu;
         updateToolbarMenu();
 
+        joinButton  = toolbarMenu.findItem(R.id.event_viewer_join_event);
+        leaveButton = toolbarMenu.findItem(R.id.event_viewer_leave_event);
+        editButton  = toolbarMenu.findItem(R.id.event_viewer_edit_event);
+        saveButton  = toolbarMenu.findItem(R.id.event_viewer_save_event);
+
+        editButton.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                modified = true;
+                setEditable(true);
+                return false;
+            }
+        });
+
+        saveButton.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                setEditable(false);
+
+                getUploadEventTask()
+                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Toast.makeText(EventViewerActivity.this, "Event saved", Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(EventViewerActivity.this, "Failed to save event: server error", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+
+                return false;
+            }
+        });
+
         return true;
+    }
+
+    private void setEditable(boolean editable) {
+        if (editable) {
+            if (eventHost) {
+                editButton.setVisible(false);
+                saveButton.setVisible(true);
+            }
+
+            dateContent.setClickable(true);
+            dateContent.setFocusableInTouchMode(true);
+
+            timeContent.setClickable(true);
+            timeContent.setFocusableInTouchMode(true);
+
+            attendeesTitle.setText("Max Attendees");
+            attendeesContent.setText(String.valueOf(event.getMaxAttendees()));
+
+            descriptionContent.setClickable(true);
+            descriptionContent.setFocusableInTouchMode(true);
+        }
+        else {
+            if (eventHost) {
+                editButton.setVisible(true);
+                saveButton.setVisible(false);
+            }
+
+            dateContent.setClickable(false);
+            dateContent.setFocusable(false);
+
+            timeContent.setClickable(false);
+            timeContent.setFocusable(false);
+
+            attendeesTitle.setText("Attendees");
+            updateAttendees();
+
+            descriptionContent.setClickable(false);
+            descriptionContent.setFocusable(false);
+        }
     }
 
     private void updateToolbarMenu() {
         final FirebaseUser user = mAuth.getCurrentUser();
 
-        MenuItem joinButton  = toolbarMenu.findItem(R.id.event_viewer_join_event);
-        MenuItem leaveButton = toolbarMenu.findItem(R.id.event_viewer_leave_event);
+        joinButton.setVisible(false);
+        leaveButton.setVisible(false);
+        editButton.setVisible(false);
+        saveButton.setVisible(false);
 
-        if (eventHost || event.full()) {
-            joinButton.setVisible(false);
-            leaveButton.setVisible(false);
-        }
-        else if (event != null && user != null) {
-            if (event.isUserAttending(user.getUid())) {
-                joinButton.setVisible(false);
+        if (event != null && user != null) {
+            if (eventHost) {
+                editButton.setVisible(true);
+            }
+            else if (event.isUserAttending(user.getUid())) {
                 leaveButton.setVisible(true);
+                setEditable(false);
             }
             else {
                 joinButton.setVisible(true);
-                leaveButton.setVisible(false);
+                setEditable(false);
             }
         }
     }
 
     private void updateAttendees() {
-        View attendeesView = findViewById(R.id.event_viewer_attendees_view);
-
-        ((ImageView)attendeesView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_person_black_24dp);
-
-        TextView attendeesTitle   = attendeesView.findViewById(R.id.title);
-        TextView attendeesContent = attendeesView.findViewById(R.id.content);
-        attendeesTitle.setText(R.string.event_attendees);
-
         String max = String.valueOf(event.getMaxAttendees());
         String current = String.valueOf(event.numCurrentAttendees());
         final String attendeesString = current + " / " + max;
