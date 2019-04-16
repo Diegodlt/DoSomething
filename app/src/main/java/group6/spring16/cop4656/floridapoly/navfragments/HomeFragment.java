@@ -100,8 +100,6 @@ public class HomeFragment extends Fragment {
             username.setText(mUser.getEmail());
         }
 
-
-
         // Create the recycler views and populate them
         setupEventRecyclerViews(view);
 
@@ -135,8 +133,8 @@ public class HomeFragment extends Fragment {
         attendingEventsView.setAdapter(attendingAdapter);
 
         // Set the event view's touch listener
-        EventRecyclerTouchListener eventRecyclerTouchListener = new EventRecyclerTouchListener(getActivity(), hostingEventsView);
-        eventRecyclerTouchListener.setClickListener(new EventRecyclerTouchListener.ClickListener() {
+        EventRecyclerTouchListener hostingTouchListener = new EventRecyclerTouchListener(getActivity(), hostingEventsView);
+        hostingTouchListener.setClickListener(new EventRecyclerTouchListener.ClickListener() {
             @Override
             public void onClick(View view, int position) {
                 Intent intent = new Intent(getActivity(), EventViewerActivity.class);
@@ -145,8 +143,18 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        hostingEventsView.addOnItemTouchListener(eventRecyclerTouchListener);
-        attendingEventsView.addOnItemTouchListener(eventRecyclerTouchListener);
+        EventRecyclerTouchListener attendingTouchListener = new EventRecyclerTouchListener(getActivity(), attendingEventsView);
+        attendingTouchListener.setClickListener(new EventRecyclerTouchListener.ClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                Intent intent = new Intent(getActivity(), EventViewerActivity.class);
+                intent.putExtra(EXTRA_EVENT, attendingEvents.get(position));
+                startActivity(intent);
+            }
+        });
+
+        hostingEventsView.addOnItemTouchListener(hostingTouchListener);
+        attendingEventsView.addOnItemTouchListener(attendingTouchListener);
 
         db.collection("users")
                 .document(mUser.getUid())
