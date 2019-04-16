@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.card.MaterialCardView;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -33,6 +34,7 @@ import java.util.List;
 import group6.spring16.cop4656.floridapoly.EventRecyclerAdapter;
 import group6.spring16.cop4656.floridapoly.EventRecyclerTouchListener;
 import group6.spring16.cop4656.floridapoly.MainActivity;
+import group6.spring16.cop4656.floridapoly.MainScreen;
 import group6.spring16.cop4656.floridapoly.R;
 import group6.spring16.cop4656.floridapoly.event.Event;
 import group6.spring16.cop4656.floridapoly.event.EventViewerActivity;
@@ -156,6 +158,26 @@ public class HomeFragment extends Fragment {
         hostingEventsView.addOnItemTouchListener(hostingTouchListener);
         attendingEventsView.addOnItemTouchListener(attendingTouchListener);
 
+        // Fetch events from the database and update the adapters
+        updateEvents();
+
+        CardView newHosting = view.findViewById(R.id.home_hosting_events).findViewById(R.id.event_recycler_add_card);
+        CardView newAttending = view.findViewById(R.id.home_attending_events).findViewById(R.id.event_recycler_add_card);
+        newHosting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((MainScreen)getActivity()).requestEventCreatorFragment();
+            }
+        });
+        newAttending.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((MainScreen)getActivity()).requestDiscoverFragment();
+            }
+        });
+    }
+
+    private void updateEvents() {
         db.collection("users")
                 .document(mUser.getUid())
                 .get()
@@ -167,40 +189,12 @@ public class HomeFragment extends Fragment {
 
                         // Add hosting events
                         if (hostingIds != null) {
-                            for (final String id : hostingIds) {
-                                db.collection("events")
-                                        .document(id)
-                                        .get()
-                                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                            @Override
-                                            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                                Event event = documentSnapshot.toObject(Event.class);
-                                                if (event != null) {
-                                                    hostingEvents.add(event);
-                                                    hostingAdapter.notifyDataSetChanged();
-                                                }
-                                            }
-                                        });
-                            }
+                            fetchEvents(hostingIds, hostingEvents, hostingAdapter);
                         }
 
                         // Add attending events
                         if (attendingIds != null) {
-                            for (final String id : attendingIds) {
-                                db.collection("events")
-                                        .document(id)
-                                        .get()
-                                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                                            @Override
-                                            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                                                Event event = documentSnapshot.toObject(Event.class);
-                                                if (event != null) {
-                                                    attendingEvents.add(event);
-                                                    attendingAdapter.notifyDataSetChanged();
-                                                }
-                                            }
-                                        });
-                            }
+                            fetchEvents(attendingIds, attendingEvents, attendingAdapter);
                         }
                     }
                 })
@@ -210,6 +204,24 @@ public class HomeFragment extends Fragment {
                         //TODO: log error
                     }
                 });
+    }
+
+    private void fetchEvents(@NonNull final List<String> ids, @NonNull final List<Event> events, @NonNull final EventRecyclerAdapter adapter) {
+        for (final String id : ids) {
+            db.collection("events")
+                    .document(id)
+                    .get()
+                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                        @Override
+                        public void onSuccess(DocumentSnapshot documentSnapshot) {
+                            Event event = documentSnapshot.toObject(Event.class);
+                            if (event != null) {
+                                events.add(event);
+                                adapter.notifyDataSetChanged();
+                            }
+                        }
+                    });
+        }
     }
 
     // TODO: Rename method, update argument and hook method into UI event

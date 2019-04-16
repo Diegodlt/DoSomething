@@ -73,6 +73,22 @@ public class MainScreen extends AppCompatActivity
         }
     }
 
+    public void requestHomeScreenFragment() {
+        navBar.setSelectedItemId(R.id.nav_item_home_screen);
+    }
+
+    public void requestDiscoverFragment() {
+        navBar.setSelectedItemId(R.id.nav_item_discover);
+    }
+
+    public void requestEventCreatorFragment() {
+        navBar.setSelectedItemId(R.id.nav_item_event_creator);
+    }
+
+    public void requestSettingsFragment() {
+        navBar.setSelectedItemId(R.id.nav_item_settings);
+    }
+
     private void startHomeScreenFragment() {
         HomeFragment frag = HomeFragment.newInstance();
         openTab(frag);
