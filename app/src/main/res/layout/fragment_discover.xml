@@ -11,7 +11,9 @@
         android:gravity="center_horizontal"
         android:paddingTop="15dp"
         android:text="@string/discover_title"
-        android:textSize="30sp" />
+        android:textSize="30sp"
+        android:textColor="@color/quantum_white_100"
+        android:background="@color/colorPrimaryDark"/>
 
     <com.google.android.gms.maps.MapView
         android:id="@+id/discover_map"

@@ -188,7 +188,7 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         TextView attendeesContent = attendeesView.findViewById(R.id.content);
         attendeesTitle.setText(R.string.event_attendees);
 
-        String max     = String.valueOf(event.getMaxAttendees());
+        String max = String.valueOf(event.getMaxAttendees());
         String current = String.valueOf(event.numCurrentAttendees());
         final String attendeesString = current + " / " + max;
         attendeesContent.setText(attendeesString);

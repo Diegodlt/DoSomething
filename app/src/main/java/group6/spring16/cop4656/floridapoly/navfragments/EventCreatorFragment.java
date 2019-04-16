@@ -129,19 +129,20 @@ public class EventCreatorFragment extends Fragment implements OnMapReadyCallback
             @Override
             public void onClick(View v) {
                 if (TextUtils.isEmpty(nameText.getText())) {
-                    Toast.makeText(getActivity(), "Please enter an event name", Toast.LENGTH_SHORT).show();
+                    toastMessage("Please enter an event name");
                 }
                 else if (TextUtils.isEmpty(dateText.getEditText().getText())) {
-                    Toast.makeText(getActivity(), "Please enter an event date", Toast.LENGTH_SHORT).show();
+                    toastMessage("Please enter an event date");
                 }
                 else if (TextUtils.isEmpty(timeText.getEditText().getText())) {
-                    Toast.makeText(getActivity(), "Please enter an event time", Toast.LENGTH_SHORT).show();
+                    toastMessage("Please enter an event time");
                 }
                 else if (TextUtils.isEmpty(maxAttendeesText.getText())) {
-                    Toast.makeText(getActivity(), "Please enter an attendee limit", Toast.LENGTH_SHORT).show();
+                    toastMessage("Please enter an attendee limit");
+
                 }
                 else if (eventLocation == null) {
-                    Toast.makeText(getActivity(), "Please enter an event location", Toast.LENGTH_SHORT).show();
+                    toastMessage("Please enter an event location");
                 }
                 else {
                     createEvent();
