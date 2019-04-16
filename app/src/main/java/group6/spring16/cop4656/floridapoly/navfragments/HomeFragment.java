@@ -201,7 +201,7 @@ public class HomeFragment extends Fragment {
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        //TODO: log error
+                        Log.e("DB", "Failed to get data for user with ID: " + mUser.getUid(), e);
                     }
                 });
     }
