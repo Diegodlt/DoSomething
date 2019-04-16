@@ -20,15 +20,21 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnCanceledListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import group6.spring16.cop4656.floridapoly.R;
 
@@ -36,7 +42,8 @@ import group6.spring16.cop4656.floridapoly.R;
 
 public class EventViewerActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    private static final String EXTRA_EVENT = "event";
+    public static final String EXTRA_EVENT = "event";
+    public static final int RESULT_MODIFIED = 1;
 
     // The event to display the details of
     private Event event;
@@ -44,11 +51,15 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
     // Is the current user the event host?
     private boolean eventHost = false;
 
+    // Did the user modify the event?
+    private boolean modified = false;
+
     private Menu toolbarMenu;
 
     // Firebase
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
+    private FirebaseUser user;
 
     // Google Maps
     private MapView mapView;
@@ -66,6 +77,7 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         // Initialize database and auth objects
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
+        user = mAuth.getCurrentUser();
 
         // Check if the user is the event host
         final FirebaseUser user = mAuth.getCurrentUser();
@@ -127,12 +139,21 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         mapView.getMapAsync(this);
     }
 
+    private void finishViewer() {
+        if (modified) {
+            setResult(RESULT_MODIFIED);
+        }
+        finish();
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.event_viewer_menu, menu);
+
         toolbarMenu = menu;
         updateToolbarMenu();
+
         return true;
     }
 
@@ -142,7 +163,7 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         MenuItem joinButton  = toolbarMenu.findItem(R.id.event_viewer_join_event);
         MenuItem leaveButton = toolbarMenu.findItem(R.id.event_viewer_leave_event);
 
-        if (eventHost) {
+        if (eventHost || event.full()) {
             joinButton.setVisible(false);
             leaveButton.setVisible(false);
         }
@@ -177,7 +198,7 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home: {
-                finish();
+                finishViewer();
                 break;
             }
             case R.id.event_viewer_join_event: {
@@ -209,79 +230,143 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         return true;
     }
 
+    private Task<DocumentSnapshot> getFetchUpdatedEventTask() {
+        modified = true;
+
+        Task<DocumentSnapshot> task = db.collection("events")
+                .document(event.getEventId())
+                .get();
+
+        task.addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                @Override
+                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                    Event updated = documentSnapshot.toObject(Event.class);
+                    if (updated == null) {
+                        Log.e("DB", "Failed to convert DocumentSnapshot into Event");
+                    }
+                    else {
+                        event = updated;
+                    }
+                }
+            })
+            .addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.e("DB", "Failed to get event with ID" + event.getEventId(), e);
+                }
+            })
+            .addOnCanceledListener(new OnCanceledListener() {
+                @Override
+                public void onCanceled() {
+                    Log.w("DB", "Failed to get event with ID " + event.getEventId() + " (task canceled)");
+                }
+            });
+
+        return task;
+    }
+
+    private Task<Void> getUploadEventTask() {
+        modified = true;
+
+        Task<Void> task = db.collection("events")
+                .document(event.getEventId())
+                .set(event);
+
+
+        task.addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.e("DB", "Failed to update event with ID " + event.getEventId(), e);
+                }
+            })
+            .addOnCanceledListener(new OnCanceledListener() {
+                @Override
+                public void onCanceled() {
+                    Log.w("DB", "Failed to update event with ID " + event.getEventId() + " (task canceled)");
+                }
+            });
+
+        return task;
+    }
+
     private void joinEvent() {
-        if (event.isFull()) {
-            Toast.makeText(EventViewerActivity.this,
-                    "Failed to join: event is full",
-                    Toast.LENGTH_SHORT).show();
+        if (eventHost || user == null || event.isUserAttending(user.getUid())) {
             return;
         }
 
-        final FirebaseUser user = mAuth.getCurrentUser();
+        getFetchUpdatedEventTask().continueWithTask(new Continuation<DocumentSnapshot, Task<Void>>() {
+            @Override
+            public Task<Void> then(@NonNull Task<DocumentSnapshot> task) throws Exception {
+                if (event.full()) {
+                    Toast.makeText(EventViewerActivity.this,
+                            "Failed to join: event is full",
+                            Toast.LENGTH_SHORT).show();
+                }
+                else if (!event.isUserAttending(user.getUid())) {
+                    event.addAttendee(user.getUid());
+                }
 
-        if (!eventHost && user != null && !event.isUserAttending(user.getUid())) {
-            event.addAttendee(user.getUid());
+                return getUploadEventTask();
+            }
+        })
+        .addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Toast.makeText(EventViewerActivity.this, "Joined event", Toast.LENGTH_SHORT).show();
+                updateToolbarMenu();
+                updateAttendees();
 
-            db.collection("events")
-                    .document(event.getEventId())
-                    .set(event)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            Toast.makeText(EventViewerActivity.this, "Joined event", Toast.LENGTH_SHORT).show();
-                            updateToolbarMenu();
-                            updateAttendees();
+                // Add the event to the user's "attending" array
+                db.collection("users")
+                        .document(user.getUid())
+                        .update("attending", FieldValue.arrayUnion(event.getEventId()));
+            }
+        })
+        .addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Toast.makeText(EventViewerActivity.this,
+                        "Failed to join event: server error",
+                        Toast.LENGTH_SHORT).show();
 
-                            // Add the event to the user's "attending" array
-                            db.collection("users")
-                                    .document(user.getUid())
-                                    .update("attending", FieldValue.arrayUnion(event.getEventId()));
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(EventViewerActivity.this,
-                                    "Failed to join event: server error",
-                                    Toast.LENGTH_SHORT).show();
-
-                            Log.e("DB", "Failed to join event", e);
-                            event.removeAttendee(user.getUid());
-                        }
-                    });
-        }
+                updateToolbarMenu();
+                updateAttendees();
+            }
+        });
     }
 
     private void leaveEvent() {
-        final FirebaseUser user = mAuth.getCurrentUser();
-
-        if (!eventHost && user != null && event.isUserAttending(user.getUid())) {
-            event.removeAttendee(user.getUid());
-
-            db.collection("events")
-                    .document(event.getEventId())
-                    .set(event)
-                    .addOnSuccessListener(new OnSuccessListener<Void>() {
-                        @Override
-                        public void onSuccess(Void aVoid) {
-                            Toast.makeText(EventViewerActivity.this, "Left event", Toast.LENGTH_SHORT).show();
-                            updateToolbarMenu();
-                            updateAttendees();
-
-                            // Remove the event from the user's "attending" array
-                            db.collection("users")
-                                    .document(user.getUid())
-                                    .update("attending", FieldValue.arrayRemove(event.getEventId()));
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Log.e("DB", "Failed to leave event", e);
-                            event.addAttendee(user.getUid());
-                        }
-                    });
+        if (eventHost || user == null || !event.isUserAttending(user.getUid())) {
+            return;
         }
+
+        getFetchUpdatedEventTask().continueWithTask(new Continuation<DocumentSnapshot, Task<Void>>() {
+            @Override
+            public Task<Void> then(@NonNull Task<DocumentSnapshot> task) throws Exception {
+                event.removeAttendee(user.getUid());
+                return getUploadEventTask();
+            }
+        })
+        .addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                Toast.makeText(EventViewerActivity.this, "Left event", Toast.LENGTH_SHORT).show();
+                updateToolbarMenu();
+                updateAttendees();
+
+                // Remove the event from the user's "attending" array
+                db.collection("users")
+                        .document(user.getUid())
+                        .update("attending", FieldValue.arrayRemove(event.getEventId()));
+            }
+        })
+        .addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.e("DB", "Failed to leave event: server error", e);
+                event.addAttendee(user.getUid());
+            }
+        });
     }
 
     @Override
@@ -297,6 +382,11 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
             // Move to marker
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(opt.getPosition(), 15));
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        finishViewer();
     }
 
     @Override

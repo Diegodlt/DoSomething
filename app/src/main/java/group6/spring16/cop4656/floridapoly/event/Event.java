@@ -13,19 +13,19 @@ import java.util.UUID;
 
 
 public class Event implements Serializable {
-    private String eventId;
-    private String hostId;
+    public String eventId;
+    public String hostId;
 
-    private String title;
-    private Date   dateTime;
-    private String description;
-    private int    maxAttendees;
+    public String title;
+    public Date   dateTime;
+    public String description;
+    public int    maxAttendees;
 
     // Location
-    private double latitude;
-    private double longitude;
+    public double latitude;
+    public double longitude;
 
-    private List<String> attendees = new ArrayList<>();
+    public List<String> attendees = new ArrayList<>();
 
     // Firestore requires a no-arg constructor for custom objects
     public Event() {
@@ -111,6 +111,10 @@ public class Event implements Serializable {
         return attendees.contains(userId);
     }
 
+    public void setAttendees(List<String> users) {
+        this.attendees = users;
+    }
+
     public void addAttendee(String user) {
         attendees.add(user);
     }
@@ -123,7 +127,7 @@ public class Event implements Serializable {
         return attendees.size();
     }
 
-    public boolean isFull() {
-        return attendees.size() == maxAttendees;
+    public boolean full() {
+        return attendees.size() >= maxAttendees;
     }
 }

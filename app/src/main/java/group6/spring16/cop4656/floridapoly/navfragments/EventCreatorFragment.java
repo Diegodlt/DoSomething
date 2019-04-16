@@ -52,7 +52,6 @@ import group6.spring16.cop4656.floridapoly.util.picker.TimePickerEditText;
 public class EventCreatorFragment extends Fragment implements OnMapReadyCallback {
 
     private static final int REQUEST_LOCATION = 1;
-    private static final String EXTRA_LOCATION = "location";
 
     private OnFragmentInteractionListener mListener;
 
@@ -163,7 +162,7 @@ public class EventCreatorFragment extends Fragment implements OnMapReadyCallback
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_LOCATION && resultCode == Activity.RESULT_OK) {
-            final LatLng location = data.getParcelableExtra(EXTRA_LOCATION);
+            final LatLng location = data.getParcelableExtra(LocationSelectorActivity.EXTRA_LOCATION);
             eventLocation = location;
             if (map != null) {
                 MarkerOptions opt = new MarkerOptions();

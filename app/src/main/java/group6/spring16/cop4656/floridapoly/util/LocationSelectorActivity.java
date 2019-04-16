@@ -44,7 +44,7 @@ public class LocationSelectorActivity extends AppCompatActivity implements OnMap
 
     private final String TAG = this.getClass().getSimpleName();
 
-    private static final String EXTRA_LOCATION = "location";
+    public static final String EXTRA_LOCATION = "location";
 
     private static final int REQUEST_AUTOCOMPLETE_RESULT = 1;
 

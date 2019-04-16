@@ -1,6 +1,7 @@
 package group6.spring16.cop4656.floridapoly.navfragments;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -54,8 +55,8 @@ public class DiscoverFragment extends Fragment implements
     // Constants - Tag
     private final String TAG = this.getClass().getSimpleName();
 
-    // Constants - Intent extras
-    private final String EXTRA_EVENT = "event";
+    // Constants - Intents
+    private final int REQUEST_EVENT_MODIFIED = 1;
 
     // Constants - Map
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
@@ -124,7 +125,10 @@ public class DiscoverFragment extends Fragment implements
         return view;
     }
 
-    private void addEvents() {
+    private void refreshEvents() {
+        events.clear();
+        map.clear();
+
         db.collection("events")
                 .get()
                 .addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
@@ -159,8 +163,8 @@ public class DiscoverFragment extends Fragment implements
 
         // Start the event viewer
         Intent intent = new Intent(getActivity(), EventViewerActivity.class);
-        intent.putExtra(EXTRA_EVENT, event);
-        startActivity(intent);
+        intent.putExtra(EventViewerActivity.EXTRA_EVENT, event);
+        startActivityForResult(intent, REQUEST_EVENT_MODIFIED);
 
         // Return false to indicate that we have not consumed the event and that we wish
         // for the default behavior to occur (which is for the camera to move such that the
@@ -181,6 +185,16 @@ public class DiscoverFragment extends Fragment implements
         }
         else {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d("RESULT", "Request:" + String.valueOf(requestCode) + " Result:" + String.valueOf(resultCode));
+        if (requestCode == REQUEST_EVENT_MODIFIED && resultCode == EventViewerActivity.RESULT_MODIFIED) {
+            events.clear();
+            refreshEvents();
         }
     }
 
@@ -254,8 +268,7 @@ public class DiscoverFragment extends Fragment implements
             setMapLocationEnabled(locationPermission);
 
             // Add the event markers to the map
-            addEvents();
-
+            refreshEvents();
         }
     }
 

@@ -5,18 +5,37 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.card.MaterialCardView;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.Continuation;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
+
+import group6.spring16.cop4656.floridapoly.EventRecyclerAdapter;
+import group6.spring16.cop4656.floridapoly.EventRecyclerTouchListener;
 import group6.spring16.cop4656.floridapoly.MainActivity;
 import group6.spring16.cop4656.floridapoly.R;
+import group6.spring16.cop4656.floridapoly.event.Event;
+import group6.spring16.cop4656.floridapoly.event.EventViewerActivity;
 
 
 /**
@@ -28,51 +47,41 @@ import group6.spring16.cop4656.floridapoly.R;
  * create an instance of this fragment.
  */
 public class HomeFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private static final String EXTRA_EVENT = "event";
 
     private OnFragmentInteractionListener mListener;
 
     // User data
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
     private FirebaseUser mUser;
     private Button signOutButton;
     private TextView username;
+
+    private RecyclerView hostingEventsView;
+    private LinearLayoutManager hostingLayoutManager;
+    private EventRecyclerAdapter hostingAdapter;
+
+    private RecyclerView attendingEventsView;
+    private LinearLayoutManager attendingLayoutManager;
+    private EventRecyclerAdapter attendingAdapter;
+
+    private List<Event> hostingEvents = new ArrayList<>();
+    private List<Event> attendingEvents = new ArrayList<>();
 
     public HomeFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment HomeFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static HomeFragment newInstance(/*String param1, String param2*/) {
-        HomeFragment fragment = new HomeFragment();
-        //Bundle args = new Bundle();
-        //args.putString(ARG_PARAM1, param1);
-        //args.putString(ARG_PARAM2, param2);
-        //fragment.setArguments(args);
-        return fragment;
+    public static HomeFragment newInstance() {
+        return new HomeFragment();
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
 
@@ -83,6 +92,7 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
         mUser = mAuth.getCurrentUser();
 
         signOutButton = view.findViewById(R.id.signOutButton);
@@ -101,7 +111,107 @@ public class HomeFragment extends Fragment {
             }
         });
 
+
+        // Create the recycler views and populate them
+        setupEventRecyclerViews(view);
+
         return view;
+    }
+
+    private void setupEventRecyclerViews(@NonNull View view) {
+        View hostingView = view.findViewById(R.id.home_hosting_events);
+        View attendingView = view.findViewById(R.id.home_attending_events);
+
+        // Set the titles
+        TextView hostingTitle = hostingView.findViewById(R.id.recycler_title);
+        TextView attendingTitle = attendingView.findViewById(R.id.recycler_title);
+        hostingTitle.setText("Hosting");
+        attendingTitle.setText("Attending");
+
+        // Get the event RecyclerViews
+        hostingEventsView = hostingView.findViewById(R.id.recycler_view);
+        attendingEventsView = attendingView.findViewById(R.id.recycler_view);
+
+        // Set the event view's layout managers
+        hostingLayoutManager = new LinearLayoutManager(getActivity());
+        attendingLayoutManager = new LinearLayoutManager(getActivity());
+        hostingEventsView.setLayoutManager(hostingLayoutManager);
+        attendingEventsView.setLayoutManager(attendingLayoutManager);
+
+        // Create and set the adapters for the event views
+        hostingAdapter = new EventRecyclerAdapter(hostingEvents);
+        attendingAdapter = new EventRecyclerAdapter(attendingEvents);
+        hostingEventsView.setAdapter(hostingAdapter);
+        attendingEventsView.setAdapter(attendingAdapter);
+
+        // Set the event view's touch listener
+        EventRecyclerTouchListener eventRecyclerTouchListener = new EventRecyclerTouchListener(getActivity(), hostingEventsView);
+        eventRecyclerTouchListener.setClickListener(new EventRecyclerTouchListener.ClickListener() {
+            @Override
+            public void onClick(View view, int position) {
+                Intent intent = new Intent(getActivity(), EventViewerActivity.class);
+                intent.putExtra(EXTRA_EVENT, hostingEvents.get(position));
+                startActivity(intent);
+            }
+        });
+
+        hostingEventsView.addOnItemTouchListener(eventRecyclerTouchListener);
+        attendingEventsView.addOnItemTouchListener(eventRecyclerTouchListener);
+
+        db.collection("users")
+                .document(mUser.getUid())
+                .get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        final ArrayList<String> hostingIds = (ArrayList<String>)documentSnapshot.get("hosting");
+                        final ArrayList<String> attendingIds = (ArrayList<String>)documentSnapshot.get("attending");
+
+                        // Add hosting events
+                        if (hostingIds != null) {
+                            for (final String id : hostingIds) {
+                                db.collection("events")
+                                        .document(id)
+                                        .get()
+                                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                            @Override
+                                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                                Event event = documentSnapshot.toObject(Event.class);
+                                                if (event != null) {
+                                                    hostingEvents.add(event);
+                                                    hostingAdapter.notifyDataSetChanged();
+                                                }
+                                            }
+                                        });
+                            }
+                        }
+
+                        // Add attending events
+                        if (attendingIds != null) {
+                            for (final String id : attendingIds) {
+                                db.collection("events")
+                                        .document(id)
+                                        .get()
+                                        .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                            @Override
+                                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                                Event event = documentSnapshot.toObject(Event.class);
+                                                if (event != null) {
+                                                    attendingEvents.add(event);
+                                                    attendingAdapter.notifyDataSetChanged();
+                                                }
+                                            }
+                                        });
+                            }
+                        }
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        //TODO: log error
+                    }
+                });
     }
 
     // TODO: Rename method, update argument and hook method into UI event

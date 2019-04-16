@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".navfragments.HomeFragment">
 
     <LinearLayout
@@ -28,8 +29,29 @@
             android:layout_marginTop="8dp"
             android:text="@string/hint_username"
             android:layout_gravity="center_horizontal"/>
-    </LinearLayout>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="500dp"
+            android:orientation="vertical"
+            android:weightSum="100">
+
+            <include
+                android:id="@+id/home_hosting_events"
+                layout="@layout/event_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="50"/>
+
+            <include
+                android:id="@+id/home_attending_events"
+                layout="@layout/event_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="50"
+                android:layout_marginTop="10dp"/>
+        </LinearLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -47,4 +69,4 @@
             android:text="@string/signOut" />
     </LinearLayout>
 
-</FrameLayout>
+</LinearLayout>
