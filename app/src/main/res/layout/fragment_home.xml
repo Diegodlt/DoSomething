@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:background="@drawable/background_home"
     tools:context=".navfragments.HomeFragment">
 
     <LinearLayout
@@ -15,20 +16,20 @@
             android:id="@+id/title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
-            android:textSize="30sp"
             android:text="@string/app_name"
-            android:layout_gravity="center_horizontal"/>
+            android:textSize="30sp" />
 
         <TextView
             android:id="@+id/username"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
             android:layout_marginTop="8dp"
-            android:text="@string/hint_username"
-            android:layout_gravity="center_horizontal"/>
+            android:text="@string/hint_username" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -51,22 +52,6 @@
                 android:layout_weight="50"
                 android:layout_marginTop="10dp"/>
         </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:orientation="horizontal"
-        android:layout_gravity="bottom">
-
-        <Button
-            android:id="@+id/signOutButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/signOut" />
     </LinearLayout>
 
 </LinearLayout>

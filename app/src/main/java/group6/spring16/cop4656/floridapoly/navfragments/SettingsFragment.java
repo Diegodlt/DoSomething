@@ -2,6 +2,7 @@ package group6.spring16.cop4656.floridapoly.navfragments;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -17,6 +18,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,6 +35,7 @@ import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import group6.spring16.cop4656.floridapoly.MainActivity;
 import group6.spring16.cop4656.floridapoly.R;
 import group6.spring16.cop4656.floridapoly.util.SelectPhotoDialog;
 
@@ -77,6 +80,9 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
     private Uri selectedImageUri;
     private byte[] mUploadBytes;
     private double mProgress = 0;
+    private Button signOutButton;
+    private FirebaseAuth mAuth;
+
 
     private StorageReference userStorageRef;
     private FirebaseUser userID;
@@ -103,6 +109,7 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         if (getArguments() != null) {
         }
     }
@@ -113,12 +120,23 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
-
+        mAuth = FirebaseAuth.getInstance();
         userID = FirebaseAuth.getInstance().getCurrentUser();
         userStorageRef = FirebaseStorage.getInstance().getReference();
         profilePicture = view.findViewById(R.id.profilePicture);
         emailTextView = view.findViewById(R.id.emailTextView);
         emailTextView.setText(userID.getEmail());
+        signOutButton = view.findViewById(R.id.signOutButton);
+
+        signOutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mAuth.signOut();
+                Intent mainScreen = new Intent(getActivity(), MainActivity.class);
+                startActivity(mainScreen);
+            }
+        });
+
 
         //getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         init();

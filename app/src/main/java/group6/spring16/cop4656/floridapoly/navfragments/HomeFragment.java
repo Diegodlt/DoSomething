@@ -56,7 +56,6 @@ public class HomeFragment extends Fragment {
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
     private FirebaseUser mUser;
-    private Button signOutButton;
     private TextView username;
 
     private RecyclerView hostingEventsView;
@@ -95,21 +94,12 @@ public class HomeFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         mUser = mAuth.getCurrentUser();
 
-        signOutButton = view.findViewById(R.id.signOutButton);
         username = view.findViewById(R.id.username);
 
         if (mUser != null) {
             username.setText(mUser.getEmail());
         }
 
-        signOutButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            mAuth.signOut();
-            Intent mainScreen = new Intent(getActivity(), MainActivity.class);
-            startActivity(mainScreen);
-            }
-        });
 
 
         // Create the recycler views and populate them
