@@ -1,10 +1,12 @@
 package group6.spring16.cop4656.floridapoly.navfragments;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -27,13 +29,16 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 
 import group6.spring16.cop4656.floridapoly.MainActivity;
 import group6.spring16.cop4656.floridapoly.R;
@@ -51,8 +56,8 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
 
     @Override
     public void getImagePath(Uri imagePath) throws IOException {
-        Log.d(TAG, "getImagePath: setting the image to imageview");
-        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), imagePath);
+        Log.d(TAG, "getImagePath: setting the image to image view");
+        Bitmap bitmap = MediaStore.Images.Media.getBitmap(Objects.requireNonNull(getContext()).getContentResolver(), imagePath);
         profilePicture.setImageBitmap(bitmap);
         //assign to global variable
         selectedImageBitmap = null;
@@ -62,7 +67,7 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
 
     @Override
     public void getImageBitmap(Bitmap bitmap) {
-        Log.d(TAG, "getImageBitmap: setting the image to imageview");
+        Log.d(TAG, "getImageBitmap: setting the image to image view");
         profilePicture.setImageBitmap(bitmap);
         //assign to a global variable
         selectedImageUri = null;
@@ -80,12 +85,12 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
     private Uri selectedImageUri;
     private byte[] mUploadBytes;
     private double mProgress = 0;
-    private Button signOutButton;
     private FirebaseAuth mAuth;
 
 
     private StorageReference userStorageRef;
     private FirebaseUser userID;
+    private StorageReference pictureReference;
     private Uri firebaseUri;
 
     public SettingsFragment() {
@@ -114,6 +119,7 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
         }
     }
 
+
     @Override
     public View onCreateView(final @NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
@@ -126,7 +132,7 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
         profilePicture = view.findViewById(R.id.profilePicture);
         emailTextView = view.findViewById(R.id.emailTextView);
         emailTextView.setText(userID.getEmail());
-        signOutButton = view.findViewById(R.id.signOutButton);
+        Button signOutButton = view.findViewById(R.id.signOutButton);
 
         signOutButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -137,11 +143,37 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
             }
         });
 
+        try {
+            downloadImage();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
-        //getActivity().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         init();
 
         return view;
+    }
+
+    public void downloadImage() throws IOException {
+
+        pictureReference = userStorageRef.child("users/" +
+                Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid() + "/" + "profilePicture");
+        final File userImage = File.createTempFile("image", "jpg");
+
+        pictureReference.getFile(userImage).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+
+                String userImagePath = userImage.getPath();
+                Bitmap userImageBitmap = BitmapFactory.decodeFile(userImagePath);
+                profilePicture.setImageBitmap(userImageBitmap);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.i("downloadImage", "No image found");
+            }
+        });
     }
 
     private void init() {
@@ -160,7 +192,7 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.CAMERA};
 
-        if(ContextCompat.checkSelfPermission(this.getActivity().getApplicationContext(),
+        if(ContextCompat.checkSelfPermission(Objects.requireNonNull(this.getActivity()).getApplicationContext(),
                 permissions[0]) == PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(this.getActivity().getApplicationContext(),
                 permissions[1]) == PackageManager.PERMISSION_GRANTED
@@ -182,6 +214,7 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
     private void myDialogBox(){
         Log.e(TAG,"myDialogBox: Opening dialog box");
         SelectPhotoDialog dialog = new SelectPhotoDialog();
+        assert getFragmentManager() != null;
         dialog.show(getFragmentManager(),getString(R.string.dialog_select_photo));
         dialog.setTargetFragment(SettingsFragment.this, 1);
     }
@@ -199,9 +232,10 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
         resize.execute(imagePath);
     }
 
+    @SuppressLint("StaticFieldLeak")
     public class BackgroundImageResize extends AsyncTask<Uri, Integer, byte[]>{
         Bitmap mBitmap;
-        public BackgroundImageResize(Bitmap bitmap) {
+        BackgroundImageResize(Bitmap bitmap) {
             if(bitmap != null){
                 this.mBitmap = bitmap;
             }
@@ -216,13 +250,12 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
             Log.d(TAG, "doInBackground: started.");
             if(mBitmap == null){
                 try{
-                    mBitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), params[0]);
+                    mBitmap = MediaStore.Images.Media.getBitmap(Objects.requireNonNull(getActivity()).getContentResolver(), params[0]);
                 }catch (IOException e){
                     Log.e(TAG, "doInBackground: IOException: " + e.getMessage());
                 }
             }
-            byte[] bytes = getBytesFromBitmap(mBitmap, 100);
-            return bytes;
+            return getBytesFromBitmap(mBitmap);
         }
         @Override
         protected void onPostExecute(byte[] bytes) {
@@ -236,7 +269,7 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
     // Method to perform image upload
     private void executeUploadTask(){
         final StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("users/" +
-                FirebaseAuth.getInstance().getCurrentUser().getUid() + "/" + "profilePicture");
+                Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid() + "/" + "profilePicture");
 
         UploadTask uploadTask = storageReference.putBytes(mUploadBytes);
         uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -270,9 +303,9 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
     }
 
     // Method to convert the Bitmap picture to an array of bytes
-    private static byte[] getBytesFromBitmap(Bitmap bitmap, int quality){
+    private static byte[] getBytesFromBitmap(Bitmap bitmap){
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, quality,stream);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100,stream);
         return stream.toByteArray();
     }
 
