@@ -5,6 +5,7 @@ import android.graphics.Rect;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -26,13 +27,13 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.tasks.Continuation;
 import com.google.android.gms.tasks.OnCanceledListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -42,9 +43,9 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 import group6.spring16.cop4656.floridapoly.R;
+import group6.spring16.cop4656.floridapoly.util.LocationSelectorActivity;
 import group6.spring16.cop4656.floridapoly.util.picker.DatePickerEditText;
 import group6.spring16.cop4656.floridapoly.util.picker.TimePickerEditText;
 
@@ -55,6 +56,12 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
     public static final String EXTRA_EVENT = "event";
     public static final int RESULT_MODIFIED = 1;
 
+    private static final int REQUEST_LOCATION = 1;
+
+    // The date/time display format
+    private final SimpleDateFormat dateFmt = new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault());
+    private final SimpleDateFormat timeFmt = new SimpleDateFormat("h:mm a", Locale.getDefault());
+
     // The event to display the details of
     private Event event;
 
@@ -63,6 +70,12 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
 
     // Did the user modify the event?
     private boolean modified = false;
+
+    // Is the event being edited
+    private boolean editing = false;
+
+    // Is this a new event?
+    private boolean newEvent = false;
 
     private Menu toolbarMenu;
     private MenuItem joinButton;
@@ -97,54 +110,69 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
     private TextView descriptionTitle;
     private EditText descriptionContent;
 
+    private FloatingActionButton locationButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_viewer);
-
-        // Get the event
-        event = (Event)getIntent().getSerializableExtra(EXTRA_EVENT);
-
 
         // Initialize database and auth objects
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
         user = mAuth.getCurrentUser();
 
-        // Check if the user is the event host
-        final FirebaseUser user = mAuth.getCurrentUser();
-        if (user != null && event.getHostId().equals(user.getUid())) {
-            eventHost = true;
-        }
 
+        // Get the event
+        event = (Event)getIntent().getSerializableExtra(EXTRA_EVENT);
+
+        // Perform the setup actions common for new and existing events
+        generalSetup(savedInstanceState);
+
+        if (event == null) {
+            newEvent = true;
+            eventHost = true;
+            setupForNewEvent(savedInstanceState);
+        }
+        else {
+            newEvent = false;
+
+            // Check if the user is the event host
+            final FirebaseUser user = mAuth.getCurrentUser();
+            if (user != null && event.hostId.equals(user.getUid())) {
+                eventHost = true;
+            }
+
+            setupForExistingEvent(savedInstanceState);
+        }
 
         // Create the toolbar
         Toolbar toolbar = findViewById(R.id.event_viewer_toolbar);
         setSupportActionBar(toolbar);
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(event.getTitle());
+            getSupportActionBar().setTitle(event.title);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
+    }
 
-
-        // Set the date/time
-        final SimpleDateFormat dateFmt = new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault());
-        final SimpleDateFormat timeFmt = new SimpleDateFormat("h:mm a", Locale.getDefault());
-
+    private void generalSetup(Bundle savedInstanceState) {
+        // Date/Time
         dateView = findViewById(R.id.event_viewer_date_view);
         timeView = findViewById(R.id.event_viewer_time_view);
+
+        dateTitle   = dateView.findViewById(R.id.title);
+        dateContent = dateView.findViewById(R.id.content);
+
+        timeTitle   = timeView.findViewById(R.id.title);
+        timeContent = timeView.findViewById(R.id.content);
 
         ((ImageView)dateView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_today_black_24dp);
         ((ImageView)timeView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_time_black_24dp);
 
-
-        // Set the date objects
-        dateTitle   = dateView.findViewById(R.id.title);
-        dateContent = dateView.findViewById(R.id.content);
         dateTitle.setText(R.string.event_date);
-        dateContent.setText(dateFmt.format(event.getDate()));
+        timeTitle.setText(R.string.event_time);
 
         // Create the date picker
         datePicker = new DatePickerEditText();
@@ -155,13 +183,6 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
                 event.day(date);
             }
         });
-
-
-        // Set the time objects
-        timeTitle   = timeView.findViewById(R.id.title);
-        timeContent = timeView.findViewById(R.id.content);
-        timeTitle.setText(R.string.event_time);
-        timeContent.setText(timeFmt.format(event.getDate()));
 
         // Create the time picker
         timePicker = new TimePickerEditText();
@@ -174,28 +195,49 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         });
 
 
-        // Set the event attendees
-        attendeesView = findViewById(R.id.event_viewer_attendees_view);
-
-        ((ImageView)attendeesView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_person_black_24dp);
-
+        // Attendees
+        attendeesView    = findViewById(R.id.event_viewer_attendees_view);
         attendeesTitle   = attendeesView.findViewById(R.id.title);
         attendeesContent = attendeesView.findViewById(R.id.content);
+
+        ((ImageView)attendeesView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_person_black_24dp);
         attendeesTitle.setText(R.string.event_attendees);
         attendeesContent.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_VARIATION_NORMAL);
 
-        updateAttendees();
+        attendeesContent.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (!editing) {
+                    return;
+                }
+
+                try {
+                    final int max = Integer.parseInt(editable.toString());
+                    event.maxAttendees = max;
+                }
+                catch (NumberFormatException e) {
+                    Log.e("EventViewer", "Error parsing max attendees", e);
+                }
+            }
+        });
 
 
-        // Set the event description
-        descriptionView = findViewById(R.id.event_viewer_desc_view);
-
-        ((ImageView)descriptionView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_comment_black_24dp);
-
+        // Description
+        descriptionView    = findViewById(R.id.event_viewer_desc_view);
         descriptionTitle   = descriptionView.findViewById(R.id.title);
         descriptionContent = descriptionView.findViewById(R.id.content);
+
+        ((ImageView)descriptionView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_comment_black_24dp);
         descriptionTitle.setText(R.string.event_description);
-        descriptionContent.setText(event.getDescription());
+
         descriptionContent.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -207,7 +249,18 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
 
             @Override
             public void afterTextChanged(Editable editable) {
-                event.setDescription(editable.toString());
+                event.description = editable.toString();
+            }
+        });
+
+
+        // Location
+        locationButton = findViewById(R.id.event_viewer_location_button);
+        locationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(EventViewerActivity.this, LocationSelectorActivity.class);
+                startActivityForResult(intent, REQUEST_LOCATION);
             }
         });
 
@@ -220,7 +273,36 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
 
         // Set the onClick listeners for the content views to call their text field's onClick method
         setupContentViewHitboxes();
+    }
 
+    private void setupForNewEvent(Bundle savedInstanceState) {
+        // Setup default event state
+        event = new Event();
+        event.hostId = user.getUid();
+        event.title = "My Event"; //TODO: don't set title once the title edittext is working
+
+        dateContent.setText("Enter an event date");
+        timeContent.setText("Enter an event time");
+        descriptionContent.setText("Enter an event description");
+
+        //TODO: maybe flag map to not add marker
+
+        // Make the event editable
+        setEditable(true);
+    }
+
+    private void setupForExistingEvent(Bundle savedInstanceState) {
+        // Set the date
+        dateContent.setText(dateFmt.format(event.date));
+
+        // Set the time
+        timeContent.setText(timeFmt.format(event.date));
+
+        // Set the event attendees
+        updateAttendeesText();
+
+        // Set the event description
+        descriptionContent.setText(event.description);
 
         // Disable editing by default
         setEditable(false);
@@ -231,6 +313,42 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
             setResult(RESULT_MODIFIED);
         }
         finish();
+    }
+
+    private boolean validateEventFields() {
+        boolean valid = true;
+
+        if (event.title == null || event.title.isEmpty()) {
+            Toast.makeText(EventViewerActivity.this, "Please enter a title", Toast.LENGTH_SHORT).show();
+            valid = false;
+        }
+        else if (event.date.equals(new Date(0L))) {
+            Toast.makeText(EventViewerActivity.this, "Please enter a date/time", Toast.LENGTH_SHORT).show();
+            valid = false;
+        }
+        else if (event.maxAttendees <= 0) {
+            Toast.makeText(EventViewerActivity.this, "Please a valid number of maximum attendees", Toast.LENGTH_SHORT).show();
+            valid = false;
+        }
+        else if (event.maxAttendees < event.numCurrentAttendees()) {
+            Toast.makeText(EventViewerActivity.this,
+                    "Cannot set max attendees lower than current number of attendees",
+                    Toast.LENGTH_SHORT).show();
+
+            event.maxAttendees = event.numCurrentAttendees();
+            attendeesContent.setText(String.valueOf(event.maxAttendees));
+            valid = false;
+        }
+        else if (event.latitude == 0 && event.longitude == 0) {
+            Toast.makeText(EventViewerActivity.this, "Please enter an event location", Toast.LENGTH_SHORT).show();
+            valid = false;
+        }
+        else if (event.description == null || event.description.isEmpty()) {
+            Toast.makeText(EventViewerActivity.this, "Please enter an event description", Toast.LENGTH_SHORT).show();
+            valid = false;
+        }
+
+        return valid;
     }
 
     @Override
@@ -256,12 +374,25 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         saveButton.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
+                if (!validateEventFields()) {
+                    return false;
+                }
+
                 modified = true;
                 setEditable(false);
 
                 getUploadEventTask().addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+                        if (newEvent) {
+                            // Add the event to the user's "hosting" array
+                            db.collection("users")
+                                    .document(user.getUid())
+                                    .update("hosting", FieldValue.arrayUnion(event.eventId));
+
+                            newEvent = false; //this is no longer a new event
+                        }
+
                         Toast.makeText(EventViewerActivity.this, "Event saved", Toast.LENGTH_SHORT).show();
                     }
                 })
@@ -279,6 +410,30 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
 
         updateToolbarMenu();
         return true;
+    }
+
+    private void updateToolbarMenu() {
+        if (toolbarMenu == null || event == null || user == null) {
+            return;
+        }
+
+        joinButton.setVisible(false);
+        leaveButton.setVisible(false);
+
+        if (eventHost) {
+            if (newEvent || editing) {
+                saveButton.setVisible(true);
+            }
+            else {
+                editButton.setVisible(true);
+            }
+        }
+        else if (event.isUserAttending(user.getUid())) {
+            leaveButton.setVisible(true);
+        }
+        else {
+            joinButton.setVisible(true);
+        }
     }
 
     private void setupContentViewHitboxes() {
@@ -331,6 +486,8 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
 
     private void setEditable(boolean editable) {
         if (editable) {
+            editing = true;
+
             if (eventHost && toolbarMenu != null) {
                 editButton.setVisible(false);
                 saveButton.setVisible(true);
@@ -342,15 +499,19 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
             timeContent.setClickable(true);
             timeContent.setFocusable(false);
 
-            attendeesTitle.setText("Max Attendees");
-            attendeesContent.setText(String.valueOf(event.getMaxAttendees()));
+            attendeesTitle.setText(R.string.event_max_attendees);
+            attendeesContent.setText(String.valueOf(event.maxAttendees));
             attendeesContent.setClickable(true);
             attendeesContent.setFocusableInTouchMode(true);
 
             descriptionContent.setClickable(true);
             descriptionContent.setFocusableInTouchMode(true);
+
+            locationButton.show();
         }
         else {
+            editing = false;
+
             if (eventHost && toolbarMenu != null) {
                 editButton.setVisible(true);
                 saveButton.setVisible(false);
@@ -362,43 +523,20 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
             timeContent.setClickable(false);
             timeContent.setFocusable(false);
 
-            attendeesTitle.setText("Attendees");
+            attendeesTitle.setText(R.string.event_attendees);
             attendeesContent.setClickable(false);
             attendeesContent.setFocusable(false);
-            updateAttendees();
+            updateAttendeesText();
 
             descriptionContent.setClickable(false);
             descriptionContent.setFocusable(false);
+
+            locationButton.hide();
         }
     }
 
-    private void updateToolbarMenu() {
-        if (toolbarMenu == null) {
-            return;
-        }
-
-        joinButton.setVisible(false);
-        leaveButton.setVisible(false);
-        editButton.setVisible(false);
-        saveButton.setVisible(false);
-
-        if (event != null && user != null) {
-            if (eventHost) {
-                editButton.setVisible(true);
-            }
-            else if (event.isUserAttending(user.getUid())) {
-                leaveButton.setVisible(true);
-                setEditable(false);
-            }
-            else {
-                joinButton.setVisible(true);
-                setEditable(false);
-            }
-        }
-    }
-
-    private void updateAttendees() {
-        String max = String.valueOf(event.getMaxAttendees());
+    private void updateAttendeesText() {
+        String max = String.valueOf(event.maxAttendees);
         String current = String.valueOf(event.numCurrentAttendees());
         final String attendeesString = current + " / " + max;
         attendeesContent.setText(attendeesString);
@@ -421,7 +559,7 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
             }
             case R.id.event_viewer_open_maps: {
                 final String url = "https://www.google.com/maps/search/?api=1&query="
-                        + event.getLatitude() + "%2C" + event.getLongitude();
+                        + event.latitude + "%2C" + event.longitude;
 
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 startActivity(intent);
@@ -429,7 +567,7 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
             }
             case R.id.event_viewer_directions: {
                 final String url = "https://www.google.com/maps/dir/?api=1&destination="
-                                   + event.getLatitude() + "%2C" + event.getLongitude();
+                                   + event.latitude + "%2C" + event.longitude;
 
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 startActivity(intent);
@@ -440,11 +578,22 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         return true;
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_LOCATION && resultCode == RESULT_OK) {
+            final LatLng location = data.getParcelableExtra(LocationSelectorActivity.EXTRA_LOCATION);
+            event.location(location);
+            if (map != null) {
+                updateEventMarker();
+            }
+        }
+    }
+
     private Task<DocumentSnapshot> getFetchUpdatedEventTask() {
         modified = true;
 
         Task<DocumentSnapshot> task = db.collection("events")
-                .document(event.getEventId())
+                .document(event.eventId)
                 .get();
 
         task.addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
@@ -462,13 +611,13 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
             .addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                    Log.e("DB", "Failed to get event with ID" + event.getEventId(), e);
+                    Log.e("DB", "Failed to get event with ID" + event.eventId, e);
                 }
             })
             .addOnCanceledListener(new OnCanceledListener() {
                 @Override
                 public void onCanceled() {
-                    Log.w("DB", "Failed to get event with ID " + event.getEventId() + " (task canceled)");
+                    Log.w("DB", "Failed to get event with ID " + event.eventId + " (task canceled)");
                 }
             });
 
@@ -479,20 +628,20 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         modified = true;
 
         Task<Void> task = db.collection("events")
-                .document(event.getEventId())
+                .document(event.eventId)
                 .set(event);
 
 
         task.addOnFailureListener(new OnFailureListener() {
                 @Override
                 public void onFailure(@NonNull Exception e) {
-                    Log.e("DB", "Failed to update event with ID " + event.getEventId(), e);
+                    Log.e("DB", "Failed to update event with ID " + event.eventId, e);
                 }
             })
             .addOnCanceledListener(new OnCanceledListener() {
                 @Override
                 public void onCanceled() {
-                    Log.w("DB", "Failed to update event with ID " + event.getEventId() + " (task canceled)");
+                    Log.w("DB", "Failed to update event with ID " + event.eventId + " (task canceled)");
                 }
             });
 
@@ -524,12 +673,12 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
             public void onSuccess(Void aVoid) {
                 Toast.makeText(EventViewerActivity.this, "Joined event", Toast.LENGTH_SHORT).show();
                 updateToolbarMenu();
-                updateAttendees();
+                updateAttendeesText();
 
                 // Add the event to the user's "attending" array
                 db.collection("users")
                         .document(user.getUid())
-                        .update("attending", FieldValue.arrayUnion(event.getEventId()));
+                        .update("attending", FieldValue.arrayUnion(event.eventId));
             }
         })
         .addOnFailureListener(new OnFailureListener() {
@@ -540,7 +689,7 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
                         Toast.LENGTH_SHORT).show();
 
                 updateToolbarMenu();
-                updateAttendees();
+                updateAttendeesText();
             }
         });
     }
@@ -562,12 +711,12 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
             public void onSuccess(Void aVoid) {
                 Toast.makeText(EventViewerActivity.this, "Left event", Toast.LENGTH_SHORT).show();
                 updateToolbarMenu();
-                updateAttendees();
+                updateAttendeesText();
 
                 // Remove the event from the user's "attending" array
                 db.collection("users")
                         .document(user.getUid())
-                        .update("attending", FieldValue.arrayRemove(event.getEventId()));
+                        .update("attending", FieldValue.arrayRemove(event.eventId));
             }
         })
         .addOnFailureListener(new OnFailureListener() {
@@ -583,15 +732,18 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
     public void onMapReady(GoogleMap googleMap) {
         if (googleMap != null) {
             map = googleMap;
-
-            // Add marker
-            MarkerOptions opt = new MarkerOptions();
-            opt.position(event.location());
-            map.addMarker(opt);
-
-            // Move to marker
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(opt.getPosition(), 15));
+            updateEventMarker();
         }
+    }
+
+    private void updateEventMarker() {
+        // Add marker
+        MarkerOptions opt = new MarkerOptions();
+        opt.position(event.location());
+        map.addMarker(opt);
+
+        // Move to marker
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(opt.getPosition(), 15));
     }
 
     @Override

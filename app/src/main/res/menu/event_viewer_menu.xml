@@ -7,6 +7,7 @@
         android:icon="@drawable/ic_person_add_white_24dp"
         android:title="Join"
         app:showAsAction="always"
+        android:visible="false"
         />
 
     <item
@@ -14,6 +15,7 @@
         android:icon="@drawable/ic_person_remove_white_24dp"
         android:title="Leave"
         app:showAsAction="always"
+        android:visible="false"
         />
 
     <item
@@ -21,6 +23,7 @@
         android:icon="@drawable/ic_edit_white_24dp"
         android:title="Edit"
         app:showAsAction="always"
+        android:visible="false"
         />
 
     <item
@@ -28,6 +31,7 @@
         android:icon="@drawable/ic_save_white_24dp"
         android:title="Save"
         app:showAsAction="always"
+        android:visible="false"
         />
 
     <item

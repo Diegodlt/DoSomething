@@ -196,22 +196,21 @@ public class EventCreatorFragment extends Fragment implements OnMapReadyCallback
             Log.w("DB","Null Firebase user");
             return;
         }
-        final String eventId = UUID.randomUUID().toString();
         final String userId = user.getUid();
-        final Event event = new Event(eventId, userId, name, eventDate, eventLocation, maxAttendees, description);
+        final Event event = new Event(userId, name, eventDate, eventLocation, maxAttendees, description);
 
         db.collection("events")
-                .document(eventId)
+                .document(event.eventId)
                 .set(event)
                 .addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Log.d("DB", "DocumentSnapshot added with ID: " + eventId);
+                        Log.d("DB", "DocumentSnapshot added with ID: " + event.eventId);
 
                         // Add the event to the user's "hosting" array
                         db.collection("users")
                                 .document(userId)
-                                .update("hosting", FieldValue.arrayUnion(eventId));
+                                .update("hosting", FieldValue.arrayUnion(event.eventId));
 
                         // TODO: I'm not sure where the app should take the user after an event is created
                         toastMessage("Event has been created");

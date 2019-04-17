@@ -166,7 +166,9 @@ public class HomeFragment extends Fragment {
         newHosting.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                ((MainScreen)getActivity()).requestEventCreatorFragment();
+                //((MainScreen)getActivity()).requestEventCreatorFragment();
+                Intent intent = new Intent(getActivity(), EventViewerActivity.class);
+                startActivity(intent);
             }
         });
         newAttending.setOnClickListener(new View.OnClickListener() {
