@@ -71,8 +71,40 @@ public class Event implements Serializable {
         dateTime = date;
     }
 
+    public void day(Date date) {
+        Calendar current = Calendar.getInstance();
+        Calendar modify = Calendar.getInstance();
+
+        current.setTime(dateTime);
+        modify.setTime(date);
+
+        current.set(Calendar.DAY_OF_MONTH, modify.get(Calendar.DAY_OF_MONTH));
+        current.set(Calendar.MONTH, modify.get(Calendar.MONTH));
+        current.set(Calendar.YEAR, modify.get(Calendar.YEAR));
+
+        dateTime = current.getTime();
+    }
+
+    public void time(Date date) {
+        Calendar current = Calendar.getInstance();
+        Calendar modify = Calendar.getInstance();
+
+        current.setTime(dateTime);
+        modify.setTime(date);
+
+        current.set(Calendar.HOUR_OF_DAY, modify.get(Calendar.HOUR_OF_DAY));
+        current.set(Calendar.MINUTE, modify.get(Calendar.MINUTE));
+
+        dateTime = current.getTime();
+    }
+
     public LatLng location() {
         return new LatLng(latitude, longitude);
+    }
+
+    public void location(LatLng location) {
+        latitude = location.latitude;
+        longitude = location.longitude;
     }
 
     public double getLatitude() {

@@ -1,17 +1,21 @@
 package group6.spring16.cop4656.floridapoly.event;
 
 import android.content.Intent;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.TouchDelegate;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -36,6 +40,7 @@ import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -134,25 +139,39 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         ((ImageView)dateView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_today_black_24dp);
         ((ImageView)timeView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_time_black_24dp);
 
+
+        // Set the date objects
         dateTitle   = dateView.findViewById(R.id.title);
         dateContent = dateView.findViewById(R.id.content);
         dateTitle.setText(R.string.event_date);
         dateContent.setText(dateFmt.format(event.getDate()));
 
-
         // Create the date picker
         datePicker = new DatePickerEditText();
         datePicker.setEditText(getSupportFragmentManager(), dateContent);
+        datePicker.setOnContentChangedListener(new DatePickerEditText.OnContentChangedListener() {
+            @Override
+            public void onDateChanged(@NonNull Date date, @Nullable EditText editText) {
+                event.day(date);
+            }
+        });
 
+
+        // Set the time objects
         timeTitle   = timeView.findViewById(R.id.title);
         timeContent = timeView.findViewById(R.id.content);
         timeTitle.setText(R.string.event_time);
         timeContent.setText(timeFmt.format(event.getDate()));
 
-
         // Create the time picker
         timePicker = new TimePickerEditText();
         timePicker.setEditText(getSupportFragmentManager(), timeContent);
+        timePicker.setOnContentChangedListener(new TimePickerEditText.OnContentChangedListener() {
+            @Override
+            public void onTimeChanged(@NonNull Date date, @Nullable EditText editText) {
+                event.time(date);
+            }
+        });
 
 
         // Set the event attendees
@@ -177,12 +196,30 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         descriptionContent = descriptionView.findViewById(R.id.content);
         descriptionTitle.setText(R.string.event_description);
         descriptionContent.setText(event.getDescription());
+        descriptionContent.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                event.setDescription(editable.toString());
+            }
+        });
 
 
         // Create the map
         mapView = findViewById(R.id.event_viewer_map);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
+
+
+        // Set the onClick listeners for the content views to call their text field's onClick method
+        setupContentViewHitboxes();
 
 
         // Disable editing by default
@@ -202,8 +239,6 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         inflater.inflate(R.menu.event_viewer_menu, menu);
 
         toolbarMenu = menu;
-        updateToolbarMenu();
-
         joinButton  = toolbarMenu.findItem(R.id.event_viewer_join_event);
         leaveButton = toolbarMenu.findItem(R.id.event_viewer_leave_event);
         editButton  = toolbarMenu.findItem(R.id.event_viewer_edit_event);
@@ -212,8 +247,8 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         editButton.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
-                modified = true;
                 setEditable(true);
+                getFetchUpdatedEventTask();
                 return false;
             }
         });
@@ -221,50 +256,102 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         saveButton.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
+                modified = true;
                 setEditable(false);
 
-                getUploadEventTask()
-                        .addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                Toast.makeText(EventViewerActivity.this, "Event saved", Toast.LENGTH_SHORT).show();
-                            }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(EventViewerActivity.this, "Failed to save event: server error", Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                getUploadEventTask().addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(EventViewerActivity.this, "Event saved", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e("DB", "Failed to save event", e);
+                        Toast.makeText(EventViewerActivity.this, "Failed to save event: server error", Toast.LENGTH_SHORT).show();
+                    }
+                });
 
                 return false;
             }
         });
 
+        updateToolbarMenu();
         return true;
+    }
+
+    private void setupContentViewHitboxes() {
+
+        // Set the touch area for the dateContent EditText to be that of its parent Layout
+        dateView.post(new Runnable() {
+            @Override
+            public void run() {
+                Rect delegateArea = new Rect();
+                ((View)dateContent.getParent()).getHitRect(delegateArea);
+
+                TouchDelegate touchDelegate = new TouchDelegate(delegateArea, dateContent);
+                dateView.setTouchDelegate(touchDelegate);
+            }
+        });
+
+        timeView.post(new Runnable() {
+            @Override
+            public void run() {
+                Rect delegateArea = new Rect();
+                ((View)timeContent.getParent()).getHitRect(delegateArea);
+
+                TouchDelegate touchDelegate = new TouchDelegate(delegateArea, timeContent);
+                timeView.setTouchDelegate(touchDelegate);
+            }
+        });
+
+        attendeesView.post(new Runnable() {
+            @Override
+            public void run() {
+                Rect delegateArea = new Rect();
+                ((View)attendeesContent.getParent()).getHitRect(delegateArea);
+
+                TouchDelegate touchDelegate = new TouchDelegate(delegateArea, attendeesContent);
+                attendeesView.setTouchDelegate(touchDelegate);
+            }
+        });
+
+        descriptionView.post(new Runnable() {
+            @Override
+            public void run() {
+                Rect delegateArea = new Rect();
+                ((View)descriptionContent.getParent() ).getHitRect(delegateArea);
+
+                TouchDelegate touchDelegate = new TouchDelegate(delegateArea, descriptionContent);
+                descriptionView.setTouchDelegate(touchDelegate);
+            }
+        });
     }
 
     private void setEditable(boolean editable) {
         if (editable) {
-            if (eventHost) {
+            if (eventHost && toolbarMenu != null) {
                 editButton.setVisible(false);
                 saveButton.setVisible(true);
             }
 
             dateContent.setClickable(true);
-            dateContent.setFocusableInTouchMode(true);
+            dateContent.setFocusable(false);
 
             timeContent.setClickable(true);
-            timeContent.setFocusableInTouchMode(true);
+            timeContent.setFocusable(false);
 
             attendeesTitle.setText("Max Attendees");
             attendeesContent.setText(String.valueOf(event.getMaxAttendees()));
+            attendeesContent.setClickable(true);
+            attendeesContent.setFocusableInTouchMode(true);
 
             descriptionContent.setClickable(true);
             descriptionContent.setFocusableInTouchMode(true);
         }
         else {
-            if (eventHost) {
+            if (eventHost && toolbarMenu != null) {
                 editButton.setVisible(true);
                 saveButton.setVisible(false);
             }
@@ -276,6 +363,8 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
             timeContent.setFocusable(false);
 
             attendeesTitle.setText("Attendees");
+            attendeesContent.setClickable(false);
+            attendeesContent.setFocusable(false);
             updateAttendees();
 
             descriptionContent.setClickable(false);
@@ -284,7 +373,9 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
     }
 
     private void updateToolbarMenu() {
-        final FirebaseUser user = mAuth.getCurrentUser();
+        if (toolbarMenu == null) {
+            return;
+        }
 
         joinButton.setVisible(false);
         leaveButton.setVisible(false);

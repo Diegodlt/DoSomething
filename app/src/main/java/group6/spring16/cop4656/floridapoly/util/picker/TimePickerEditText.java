@@ -1,6 +1,8 @@
 package group6.spring16.cop4656.floridapoly.util.picker;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
 import android.view.View;
 import android.widget.EditText;
@@ -8,11 +10,18 @@ import android.widget.TimePicker;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 public class TimePickerEditText extends TimePickerFragment {
     private EditText text;
     private String dateFormat = "h:mm a";
+
+    private OnContentChangedListener contentChangedListener;
+
+    public interface OnContentChangedListener {
+        void onTimeChanged(@NonNull Date date, @Nullable EditText editText);
+    }
 
     public void setEditText(final FragmentManager fragmentManager, EditText t) {
         text = t;
@@ -24,6 +33,10 @@ public class TimePickerEditText extends TimePickerFragment {
                 }
             }
         });
+    }
+
+    public void setOnContentChangedListener(OnContentChangedListener listener) {
+        contentChangedListener = listener;
     }
 
     public EditText getEditText() {
@@ -51,6 +64,10 @@ public class TimePickerEditText extends TimePickerFragment {
         getCalendar().set(Calendar.HOUR_OF_DAY, hourOfDay);
         getCalendar().set(Calendar.MINUTE, minute);
         updateText();
+
+        if (contentChangedListener != null) {
+            contentChangedListener.onTimeChanged(super.getTime(), text);
+        }
     }
 
     public void updateText() {

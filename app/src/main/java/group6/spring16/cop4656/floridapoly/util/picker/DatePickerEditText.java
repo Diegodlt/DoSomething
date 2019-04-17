@@ -1,6 +1,8 @@
 package group6.spring16.cop4656.floridapoly.util.picker;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentManager;
 import android.view.View;
 import android.widget.DatePicker;
@@ -8,11 +10,18 @@ import android.widget.EditText;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Locale;
 
 public class DatePickerEditText extends DatePickerFragment {
     private EditText text;
     private String   dateFormat = "EEEE, MMMM d, yyyy";
+
+    private OnContentChangedListener contentChangedListener;
+
+    public interface OnContentChangedListener {
+        void onDateChanged(@NonNull Date date, @Nullable EditText editText);
+    }
 
     public void setEditText(final FragmentManager fragmentManager, EditText t) {
         text = t;
@@ -24,6 +33,10 @@ public class DatePickerEditText extends DatePickerFragment {
                 }
             }
         });
+    }
+
+    public void setOnContentChangedListener(OnContentChangedListener listener) {
+        contentChangedListener = listener;
     }
 
     public EditText getEditText() {
@@ -52,6 +65,10 @@ public class DatePickerEditText extends DatePickerFragment {
         getCalendar().set(Calendar.MONTH, month);
         getCalendar().set(Calendar.DAY_OF_MONTH, day);
         updateText();
+
+        if (contentChangedListener != null) {
+            contentChangedListener.onDateChanged(super.getDate(), text);
+        }
     }
 
     private void updateText() {
