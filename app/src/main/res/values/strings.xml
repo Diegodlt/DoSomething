@@ -40,8 +40,6 @@
     <string name="choose_photo_from_memory">Choose photo from memory</string>
     <string name="take_a_photo">Take a Photo</string>
 
-    <string name="google_cloud_api_key">AIzaSyATXM-uJNwJ1KukaZy3AQ_aAKC2NE1kSYc</string>
-
     <string name="save_changes">Save Changes</string>
     <string name="enter_username">Enter Username</string>
 </resources>
