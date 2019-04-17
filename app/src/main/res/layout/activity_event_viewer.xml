@@ -14,7 +14,19 @@
         android:background="?attr/colorPrimary"
         android:elevation="4dp"
         android:theme="@style/ActionBarTheme"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <EditText
+            android:id="@+id/event_viewer_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="text"
+            android:focusable="false"
+            android:clickable="false"
+            android:textAppearance="@android:style/TextAppearance.Material.Title"
+            android:textColorHint="@color/quantum_grey300"/>
+    </android.support.v7.widget.Toolbar>
 
     <LinearLayout
         android:id="@+id/event_viewer_details_layout"

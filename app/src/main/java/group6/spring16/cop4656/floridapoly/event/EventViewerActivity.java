@@ -2,6 +2,7 @@ package group6.spring16.cop4656.floridapoly.event;
 
 import android.content.Intent;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -92,6 +93,9 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
     private MapView mapView;
     private GoogleMap map;
 
+    private EditText eventTitle;
+    private Drawable eventTitleBackground;
+
     private View dateView;
     private TextView dateTitle;
     private EditText dateContent;
@@ -151,13 +155,34 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         setSupportActionBar(toolbar);
 
         if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(event.title);
+            //getSupportActionBar().setTitle(event.title);
+            eventTitle.setText(event.title);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowHomeEnabled(true);
         }
     }
 
     private void generalSetup(Bundle savedInstanceState) {
+        eventTitle = findViewById(R.id.event_viewer_title);
+        eventTitleBackground = eventTitle.getBackground();
+        eventTitle.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (editing) {
+                    event.title = editable.toString();
+                }
+            }
+        });
+
         // Date/Time
         dateView = findViewById(R.id.event_viewer_date_view);
         timeView = findViewById(R.id.event_viewer_time_view);
@@ -220,8 +245,7 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
                 }
 
                 try {
-                    final int max = Integer.parseInt(editable.toString());
-                    event.maxAttendees = max;
+                    event.maxAttendees = Integer.parseInt(editable.toString());
                 }
                 catch (NumberFormatException e) {
                     Log.e("EventViewer", "Error parsing max attendees", e);
@@ -279,11 +303,11 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
         // Setup default event state
         event = new Event();
         event.hostId = user.getUid();
-        event.title = "My Event"; //TODO: don't set title once the title edittext is working
 
-        dateContent.setText("Enter an event date");
-        timeContent.setText("Enter an event time");
-        descriptionContent.setText("Enter an event description");
+        eventTitle.setHint("Enter an event title");
+        dateContent.setHint("Select a date");
+        timeContent.setHint("Select a time");
+        descriptionContent.setHint("Enter an event description");
 
         //TODO: maybe flag map to not add marker
 
@@ -493,6 +517,10 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
                 saveButton.setVisible(true);
             }
 
+            eventTitle.setClickable(true);
+            eventTitle.setFocusableInTouchMode(true);
+            eventTitle.setBackground(eventTitleBackground);
+
             dateContent.setClickable(true);
             dateContent.setFocusable(false);
 
@@ -516,6 +544,10 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
                 editButton.setVisible(true);
                 saveButton.setVisible(false);
             }
+
+            eventTitle.setClickable(false);
+            eventTitle.setFocusable(false);
+            eventTitle.setBackgroundResource(android.R.color.transparent);
 
             dateContent.setClickable(false);
             dateContent.setFocusable(false);
