@@ -12,11 +12,6 @@
         android:title="@string/discover_title"/>
 
     <item
-        android:id="@+id/nav_item_event_creator"
-        android:icon="@drawable/ic_group_add_black_24dp"
-        android:title="@string/event_creator_title"/>
-
-    <item
         android:id="@+id/nav_item_settings"
         android:icon="@drawable/ic_settings_black_24dp"
         android:title="@string/settings_title"/>

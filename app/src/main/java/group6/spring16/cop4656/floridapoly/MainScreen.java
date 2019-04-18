@@ -12,7 +12,6 @@ import android.view.MenuItem;
 
 import group6.spring16.cop4656.floridapoly.navfragments.AttendingEventsFragment;
 import group6.spring16.cop4656.floridapoly.navfragments.DiscoverFragment;
-import group6.spring16.cop4656.floridapoly.navfragments.EventCreatorFragment;
 import group6.spring16.cop4656.floridapoly.navfragments.HomeFragment;
 import group6.spring16.cop4656.floridapoly.navfragments.HostingEventsFragment;
 import group6.spring16.cop4656.floridapoly.navfragments.SettingsFragment;
@@ -22,7 +21,6 @@ public class MainScreen extends AppCompatActivity
                HostingEventsFragment.OnFragmentInteractionListener,
                AttendingEventsFragment.OnFragmentInteractionListener,
                DiscoverFragment.OnFragmentInteractionListener,
-               EventCreatorFragment.OnFragmentInteractionListener,
                SettingsFragment.OnFragmentInteractionListener {
 
     private static final String BACK_STACK_ROOT_TAG = "root_frag";
@@ -56,10 +54,6 @@ public class MainScreen extends AppCompatActivity
                         startDiscoverFragment();
                         return true;
 
-                    case R.id.nav_item_event_creator:
-                        startEventCreatorFragment();
-                        return true;
-
                     case R.id.nav_item_settings:
                         startSettingsFragment();
                         return true;
@@ -85,10 +79,6 @@ public class MainScreen extends AppCompatActivity
         navBar.setSelectedItemId(R.id.nav_item_discover);
     }
 
-    public void requestEventCreatorFragment() {
-        navBar.setSelectedItemId(R.id.nav_item_event_creator);
-    }
-
     public void requestSettingsFragment() {
         navBar.setSelectedItemId(R.id.nav_item_settings);
     }
@@ -100,11 +90,6 @@ public class MainScreen extends AppCompatActivity
 
     private void startDiscoverFragment() {
         DiscoverFragment frag = DiscoverFragment.newInstance();
-        openTab(frag);
-    }
-
-    private void startEventCreatorFragment() {
-        EventCreatorFragment frag = EventCreatorFragment.newInstance();
         openTab(frag);
     }
 
