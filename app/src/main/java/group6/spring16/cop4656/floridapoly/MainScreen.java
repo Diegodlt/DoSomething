@@ -10,13 +10,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import group6.spring16.cop4656.floridapoly.navfragments.AttendingEventsFragment;
 import group6.spring16.cop4656.floridapoly.navfragments.DiscoverFragment;
 import group6.spring16.cop4656.floridapoly.navfragments.EventCreatorFragment;
 import group6.spring16.cop4656.floridapoly.navfragments.HomeFragment;
+import group6.spring16.cop4656.floridapoly.navfragments.HostingEventsFragment;
 import group6.spring16.cop4656.floridapoly.navfragments.SettingsFragment;
 
 public class MainScreen extends AppCompatActivity
     implements HomeFragment.OnFragmentInteractionListener,
+               HostingEventsFragment.OnFragmentInteractionListener,
+               AttendingEventsFragment.OnFragmentInteractionListener,
                DiscoverFragment.OnFragmentInteractionListener,
                EventCreatorFragment.OnFragmentInteractionListener,
                SettingsFragment.OnFragmentInteractionListener {

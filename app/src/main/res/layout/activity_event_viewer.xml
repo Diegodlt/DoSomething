@@ -79,10 +79,11 @@
         android:layout_height="wrap_content"
         android:layout_marginRight="12dp"
         android:layout_marginBottom="12dp"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         android:clickable="true"
-        app:srcCompat="@android:drawable/ic_menu_mylocation"
-        android:visibility="invisible" />
+        android:visibility="invisible"
+        app:backgroundTintMode="src_over"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:srcCompat="@drawable/ic_my_location_white_24dp" />
 
 </android.support.constraint.ConstraintLayout>

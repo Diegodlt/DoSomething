@@ -19,9 +19,6 @@
         android:id="@+id/navigation_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimaryDark"
-        app:itemIconTint="@color/colorSettings"
-        app:itemTextColor="@color/common_google_signin_btn_text_light_focused"
         app:layout_constraintBottom_toBottomOf="parent"
         app:menu="@menu/navigation" />
 

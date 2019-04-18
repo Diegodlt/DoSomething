@@ -7,7 +7,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.card.MaterialCardView;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -50,8 +54,6 @@ import group6.spring16.cop4656.floridapoly.event.EventViewerActivity;
  */
 public class HomeFragment extends Fragment {
 
-    private static final String EXTRA_EVENT = "event";
-
     private OnFragmentInteractionListener mListener;
 
     // User data
@@ -59,17 +61,6 @@ public class HomeFragment extends Fragment {
     private FirebaseFirestore db;
     private FirebaseUser mUser;
     private TextView username;
-
-    private RecyclerView hostingEventsView;
-    private LinearLayoutManager hostingLayoutManager;
-    private EventRecyclerAdapter hostingAdapter;
-
-    private RecyclerView attendingEventsView;
-    private LinearLayoutManager attendingLayoutManager;
-    private EventRecyclerAdapter attendingAdapter;
-
-    private List<Event> hostingEvents = new ArrayList<>();
-    private List<Event> attendingEvents = new ArrayList<>();
 
     public HomeFragment() {
         // Required empty public constructor
@@ -102,128 +93,14 @@ public class HomeFragment extends Fragment {
             username.setText(mUser.getEmail());
         }
 
-        // Create the recycler views and populate them
-        setupEventRecyclerViews(view);
+        // Create the tab bar and view pager
+        TabLayout tabLayout = view.findViewById(R.id.home_tab_bar);
+        ViewPager viewPager = view.findViewById(R.id.home_tab_view_pager);
+
+        viewPager.setAdapter(new EventPagerAdapter(getChildFragmentManager()));
+        tabLayout.setupWithViewPager(viewPager);
 
         return view;
-    }
-
-    private void setupEventRecyclerViews(@NonNull View view) {
-        View hostingView = view.findViewById(R.id.home_hosting_events);
-        View attendingView = view.findViewById(R.id.home_attending_events);
-
-        // Set the titles
-        TextView hostingTitle = hostingView.findViewById(R.id.recycler_title);
-        TextView attendingTitle = attendingView.findViewById(R.id.recycler_title);
-        hostingTitle.setText("Hosting");
-        attendingTitle.setText("Attending");
-
-        // Get the event RecyclerViews
-        hostingEventsView = hostingView.findViewById(R.id.recycler_view);
-        attendingEventsView = attendingView.findViewById(R.id.recycler_view);
-
-        // Set the event view's layout managers
-        hostingLayoutManager = new LinearLayoutManager(getActivity());
-        attendingLayoutManager = new LinearLayoutManager(getActivity());
-        hostingEventsView.setLayoutManager(hostingLayoutManager);
-        attendingEventsView.setLayoutManager(attendingLayoutManager);
-
-        // Create and set the adapters for the event views
-        hostingAdapter = new EventRecyclerAdapter(hostingEvents);
-        attendingAdapter = new EventRecyclerAdapter(attendingEvents);
-        hostingEventsView.setAdapter(hostingAdapter);
-        attendingEventsView.setAdapter(attendingAdapter);
-
-        // Set the event view's touch listener
-        EventRecyclerTouchListener hostingTouchListener = new EventRecyclerTouchListener(getActivity(), hostingEventsView);
-        hostingTouchListener.setClickListener(new EventRecyclerTouchListener.ClickListener() {
-            @Override
-            public void onClick(View view, int position) {
-                Intent intent = new Intent(getActivity(), EventViewerActivity.class);
-                intent.putExtra(EXTRA_EVENT, hostingEvents.get(position));
-                startActivity(intent);
-            }
-        });
-
-        EventRecyclerTouchListener attendingTouchListener = new EventRecyclerTouchListener(getActivity(), attendingEventsView);
-        attendingTouchListener.setClickListener(new EventRecyclerTouchListener.ClickListener() {
-            @Override
-            public void onClick(View view, int position) {
-                Intent intent = new Intent(getActivity(), EventViewerActivity.class);
-                intent.putExtra(EXTRA_EVENT, attendingEvents.get(position));
-                startActivity(intent);
-            }
-        });
-
-        hostingEventsView.addOnItemTouchListener(hostingTouchListener);
-        attendingEventsView.addOnItemTouchListener(attendingTouchListener);
-
-        // Fetch events from the database and update the adapters
-        updateEvents();
-
-        CardView newHosting = view.findViewById(R.id.home_hosting_events).findViewById(R.id.event_recycler_add_card);
-        CardView newAttending = view.findViewById(R.id.home_attending_events).findViewById(R.id.event_recycler_add_card);
-        newHosting.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //((MainScreen)getActivity()).requestEventCreatorFragment();
-                Intent intent = new Intent(getActivity(), EventViewerActivity.class);
-                startActivity(intent);
-            }
-        });
-        newAttending.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                ((MainScreen)getActivity()).requestDiscoverFragment();
-            }
-        });
-    }
-
-    private void updateEvents() {
-        db.collection("users")
-                .document(mUser.getUid())
-                .get()
-                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                    @Override
-                    public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        final ArrayList<String> hostingIds = (ArrayList<String>)documentSnapshot.get("hosting");
-                        final ArrayList<String> attendingIds = (ArrayList<String>)documentSnapshot.get("attending");
-
-                        // Add hosting events
-                        if (hostingIds != null) {
-                            fetchEvents(hostingIds, hostingEvents, hostingAdapter);
-                        }
-
-                        // Add attending events
-                        if (attendingIds != null) {
-                            fetchEvents(attendingIds, attendingEvents, attendingAdapter);
-                        }
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e("DB", "Failed to get data for user with ID: " + mUser.getUid(), e);
-                    }
-                });
-    }
-
-    private void fetchEvents(@NonNull final List<String> ids, @NonNull final List<Event> events, @NonNull final EventRecyclerAdapter adapter) {
-        for (final String id : ids) {
-            db.collection("events")
-                    .document(id)
-                    .get()
-                    .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-                        @Override
-                        public void onSuccess(DocumentSnapshot documentSnapshot) {
-                            Event event = documentSnapshot.toObject(Event.class);
-                            if (event != null) {
-                                events.add(event);
-                                adapter.notifyDataSetChanged();
-                            }
-                        }
-                    });
-        }
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -263,5 +140,40 @@ public class HomeFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    public class EventPagerAdapter extends FragmentPagerAdapter {
+        public EventPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            switch (position) {
+                case 0:
+                    return HostingEventsFragment.newInstance();
+                case 1:
+                    return AttendingEventsFragment.newInstance();
+                default:
+                    return HostingEventsFragment.newInstance();
+            }
+        }
+
+        @Override
+        public int getCount() {
+            return 2;
+        }
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            switch (position) {
+                case 0:
+                    return "Hosting";
+                case 1:
+                    return "Attending";
+                default:
+                    return "Hosting";
+            }
+        }
     }
 }
