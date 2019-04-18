@@ -7,6 +7,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -17,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -63,6 +65,8 @@ public class MyEventsFragment extends Fragment {
     private CircleImageView profilePicture;
     private TextView userNameTextView;
 
+    private FloatingActionButton eventsFab;
+
     public MyEventsFragment() {
         // Required empty public constructor
     }
@@ -83,7 +87,7 @@ public class MyEventsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_my_events, container, false);
+        final View view = inflater.inflate(R.layout.fragment_my_events, container, false);
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -110,12 +114,54 @@ public class MyEventsFragment extends Fragment {
             username.setText(mUser.getEmail());
         }
 
+        // Get the FAB
+        eventsFab = view.findViewById(R.id.my_events_fab);
+
         // Create the tab bar and view pager
         TabLayout tabLayout = view.findViewById(R.id.my_events_tab_bar);
-        ViewPager viewPager = view.findViewById(R.id.my_events_view_pager);
+        final ViewPager viewPager = view.findViewById(R.id.my_events_view_pager);
 
-        viewPager.setAdapter(new EventPagerAdapter(getChildFragmentManager()));
+        final EventPagerAdapter adapter = new EventPagerAdapter(getChildFragmentManager());
+
+        viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
+
+        // Add a page change listener for changing the events FAB
+        adapter.hostingFrag.shareFab(eventsFab);
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int i, float v, int i1) {
+            }
+
+            @Override
+            public void onPageSelected(int i) {
+                switch (i) {
+                    case 0:
+                        adapter.hostingFrag.shareFab(eventsFab);
+                        eventsFab.show();
+                    default:
+                        eventsFab.hide();
+                }
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int i) {
+                if (i == ViewPager.SCROLL_STATE_DRAGGING) {
+                    eventsFab.hide();
+                }
+                else if (i == ViewPager.SCROLL_STATE_IDLE) {
+                    switch (viewPager.getCurrentItem()) {
+                        case 0:
+                            adapter.hostingFrag.shareFab(eventsFab);
+                            eventsFab.show();
+                            break;
+                        default:
+                            adapter.hostingFrag.shareFab(null);
+                            break;
+                    }
+                }
+            }
+        });
 
         return view;
     }
@@ -194,6 +240,9 @@ public class MyEventsFragment extends Fragment {
     }
 
     public class EventPagerAdapter extends FragmentPagerAdapter {
+        public HostingEventsFragment hostingFrag = HostingEventsFragment.newInstance();
+        public AttendingEventsFragment attendingFrag = AttendingEventsFragment.newInstance();
+
         public EventPagerAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -202,11 +251,10 @@ public class MyEventsFragment extends Fragment {
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return HostingEventsFragment.newInstance();
+                    return hostingFrag;
                 case 1:
-                    return AttendingEventsFragment.newInstance();
                 default:
-                    return HostingEventsFragment.newInstance();
+                    return attendingFrag;
             }
         }
 
@@ -221,9 +269,8 @@ public class MyEventsFragment extends Fragment {
                 case 0:
                     return "Hosting";
                 case 1:
-                    return "Attending";
                 default:
-                    return "Hosting";
+                    return "Attending";
             }
         }
     }

@@ -80,6 +80,7 @@
         android:layout_marginEnd="32dp"
         android:layout_marginBottom="8dp"
         android:backgroundTint="@android:color/transparent"
+        android:foreground="?attr/selectableItemBackgroundBorderless"
         android:elevation="0dp"
         android:fontFamily="sans-serif-light"
         android:padding="20dp"
