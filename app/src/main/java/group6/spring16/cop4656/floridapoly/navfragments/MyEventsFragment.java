@@ -63,7 +63,7 @@ public class MyEventsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_my_events, container, false);
+        final View view = inflater.inflate(R.layout.fragment_my_events, container, false);
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -88,6 +88,7 @@ public class MyEventsFragment extends Fragment {
         tabLayout.setupWithViewPager(viewPager);
 
         // Add a page change listener for changing the events FAB
+        adapter.hostingFrag.shareFab(eventsFab);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int i, float v, int i1) {
