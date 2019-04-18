@@ -1,20 +1,48 @@
 <resources>
     <string name="app_name">Do Something</string>
-    <string name="login">Login</string>
-    <string name="signUp">Sign Up</string>
-    <string name="hint_username">Username</string>
-    <string name="hint_password">Password</string>
-    <string name="title_activity_events">Map</string>
-    <string name="search_radius">Search Radius(Miles)</string>
-    <string name="back">Back</string>
-    <string name="title_activity_login_">Login_Activity</string>
-    <string name="fName">First Name</string>
-    <string name="lName">Last Name</string>
-    <string name="email">Email</string>
-    <string name="signOut">Sign Out</string>
 
-    <string name="home_title">Home</string>
+    <!--Activity/Fragment Title strings-->
+    <string name="title_activity_login_">Login_Activity</string>
+    <string name="my_events_title">My Events</string>
     <string name="discover_title">Discover</string>
     <string name="event_creator_title">Event Creator</string>
     <string name="settings_title">Settings</string>
+
+    <!--Launch Screen strings-->
+    <string name="login">Login</string>
+    <string name="signUp">Sign Up</string>
+
+    <!--Login/Signup strings-->
+    <string name="hint_username">Email</string>
+    <string name="hint_password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="fName">First Name</string>
+    <string name="lName">Last Name</string>
+    <string name="email">Email</string>
+
+    <string name="search_radius">Search Radius(Miles)</string>
+    <string name="back">Back</string>
+    <string name="signOut">Sign Out</string>
+
+    <string name="picture_edit">Tap picture to edit</string>
+    <string name="dialog_select_photo">SelectPhotoDialog</string>
+
+    <!--Event strings-->
+    <string name="event_name">Event Name</string>
+    <string name="event_date">Date</string>
+    <string name="event_time">Time</string>
+    <string name="event_attendees">Attendees</string>
+    <string name="event_max_attendees">Max Attendees</string>
+    <string name="event_description">Description</string>
+    <string name="event_set_location_button">Set Location</string>
+    <string name="event_create_event_button">Create Event</string>
+
+    <string name="choose_photo_from_memory">Choose photo from memory</string>
+    <string name="take_a_photo">Take a Photo</string>
+
+    <string name="save_changes">Save Changes</string>
+    <string name="enter_username">Enter Username</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

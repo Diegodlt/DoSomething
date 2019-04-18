@@ -10,10 +10,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.MenuItem;
 
+import group6.spring16.cop4656.floridapoly.navfragments.AttendingEventsFragment;
+import group6.spring16.cop4656.floridapoly.navfragments.DiscoverFragment;
+import group6.spring16.cop4656.floridapoly.navfragments.MyEventsFragment;
+import group6.spring16.cop4656.floridapoly.navfragments.HostingEventsFragment;
+import group6.spring16.cop4656.floridapoly.navfragments.SettingsFragment;
+
 public class MainScreen extends AppCompatActivity
-    implements HomeFragment.OnFragmentInteractionListener,
+    implements MyEventsFragment.OnFragmentInteractionListener,
+               HostingEventsFragment.OnFragmentInteractionListener,
+               AttendingEventsFragment.OnFragmentInteractionListener,
                DiscoverFragment.OnFragmentInteractionListener,
-               EventCreatorFragment.OnFragmentInteractionListener,
                SettingsFragment.OnFragmentInteractionListener {
 
     private static final String BACK_STACK_ROOT_TAG = "root_frag";
@@ -39,16 +46,12 @@ public class MainScreen extends AppCompatActivity
                 }
 
                 switch (menuItem.getItemId()) {
-                    case R.id.nav_item_home_screen:
+                    case R.id.nav_item_my_events:
                         startHomeScreenFragment();
                         return true;
 
                     case R.id.nav_item_discover:
                         startDiscoverFragment();
-                        return true;
-
-                    case R.id.nav_item_event_creator:
-                        startEventCreatorFragment();
                         return true;
 
                     case R.id.nav_item_settings:
@@ -68,18 +71,25 @@ public class MainScreen extends AppCompatActivity
         }
     }
 
+    public void requestHomeScreenFragment() {
+        navBar.setSelectedItemId(R.id.nav_item_my_events);
+    }
+
+    public void requestDiscoverFragment() {
+        navBar.setSelectedItemId(R.id.nav_item_discover);
+    }
+
+    public void requestSettingsFragment() {
+        navBar.setSelectedItemId(R.id.nav_item_settings);
+    }
+
     private void startHomeScreenFragment() {
-        HomeFragment frag = HomeFragment.newInstance();
+        MyEventsFragment frag = MyEventsFragment.newInstance();
         openTab(frag);
     }
 
     private void startDiscoverFragment() {
         DiscoverFragment frag = DiscoverFragment.newInstance();
-        openTab(frag);
-    }
-
-    private void startEventCreatorFragment() {
-        EventCreatorFragment frag = EventCreatorFragment.newInstance();
         openTab(frag);
     }
 

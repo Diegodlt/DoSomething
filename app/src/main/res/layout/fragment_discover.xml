@@ -3,13 +3,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".DiscoverFragment">
+    tools:context=".navfragments.DiscoverFragment">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="#fff"
         android:gravity="center_horizontal"
+        android:paddingTop="10dp"
         android:text="@string/discover_title"
+        android:textColor="@color/colorPrimaryDark"
         android:textSize="30sp" />
 
     <com.google.android.gms.maps.MapView
