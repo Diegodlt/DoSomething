@@ -148,7 +148,7 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
 
         // Set view values
         emailTextView.setText(userID.getEmail());
-        emailTextView.setTextColor(Color.WHITE);
+        emailTextView.setTextColor(Color.BLACK);
 
         try {
             Log.e(TAG, "Setting user profile picture");
@@ -375,7 +375,7 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
                 DocumentSnapshot document = task.getResult();
                 String userName = document.getString("User Name");
                 userNameEditText.setText(userName);
-                userNameEditText.setTextColor(Color.WHITE);
+                userNameEditText.setTextColor(Color.BLACK);
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
