@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -13,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -39,6 +41,8 @@ public class MyEventsFragment extends Fragment {
     private FirebaseFirestore db;
     private FirebaseUser mUser;
     private TextView username;
+
+    private FloatingActionButton eventsFab;
 
     public MyEventsFragment() {
         // Required empty public constructor
@@ -71,12 +75,50 @@ public class MyEventsFragment extends Fragment {
             username.setText(mUser.getEmail());
         }
 
+        // Get the FAB
+        eventsFab = view.findViewById(R.id.my_events_fab);
+
         // Create the tab bar and view pager
         TabLayout tabLayout = view.findViewById(R.id.my_events_tab_bar);
-        ViewPager viewPager = view.findViewById(R.id.my_events_view_pager);
+        final ViewPager viewPager = view.findViewById(R.id.my_events_view_pager);
 
-        viewPager.setAdapter(new EventPagerAdapter(getChildFragmentManager()));
+        final EventPagerAdapter adapter = new EventPagerAdapter(getChildFragmentManager());
+
+        viewPager.setAdapter(adapter);
         tabLayout.setupWithViewPager(viewPager);
+
+        // Add a page change listener for changing the events FAB
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int i, float v, int i1) {
+            }
+
+            @Override
+            public void onPageSelected(int i) {
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int i) {
+                if (i == ViewPager.SCROLL_STATE_DRAGGING) {
+                    eventsFab.hide();
+                }
+                else if (i == ViewPager.SCROLL_STATE_IDLE) {
+                    switch (viewPager.getCurrentItem()) {
+                        case 0:
+                            adapter.attendingFrag.shareFab(null);
+                            adapter.hostingFrag.shareFab(eventsFab);
+                            break;
+                        case 1:
+                        default:
+                            adapter.hostingFrag.shareFab(null);
+                            adapter.attendingFrag.shareFab(eventsFab);
+                            break;
+                    }
+
+                    eventsFab.show();
+                }
+            }
+        });
 
         return view;
     }
@@ -121,6 +163,9 @@ public class MyEventsFragment extends Fragment {
     }
 
     public class EventPagerAdapter extends FragmentPagerAdapter {
+        public HostingEventsFragment hostingFrag = HostingEventsFragment.newInstance();
+        public AttendingEventsFragment attendingFrag = AttendingEventsFragment.newInstance();
+
         public EventPagerAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -129,11 +174,10 @@ public class MyEventsFragment extends Fragment {
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return HostingEventsFragment.newInstance();
+                    return hostingFrag;
                 case 1:
-                    return AttendingEventsFragment.newInstance();
                 default:
-                    return HostingEventsFragment.newInstance();
+                    return attendingFrag;
             }
         }
 
@@ -148,9 +192,8 @@ public class MyEventsFragment extends Fragment {
                 case 0:
                     return "Hosting";
                 case 1:
-                    return "Attending";
                 default:
-                    return "Hosting";
+                    return "Attending";
             }
         }
     }

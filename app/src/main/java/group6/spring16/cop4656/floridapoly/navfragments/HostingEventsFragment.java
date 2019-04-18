@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
@@ -54,6 +55,8 @@ public class HostingEventsFragment extends Fragment {
     private LinearLayoutManager hostingLayoutManager;
     private EventRecyclerAdapter hostingAdapter;
     private List<Event> hostingEvents = new ArrayList<>();
+
+    private FloatingActionButton sharedFab;
 
     public HostingEventsFragment() {
         // Required empty public constructor
@@ -115,16 +118,27 @@ public class HostingEventsFragment extends Fragment {
         // Fetch events from the database and update the adapters
         updateEvents();
 
-        // Set the FAB's onClick listener
-        view.findViewById(R.id.new_hosting_event).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(getActivity(), EventViewerActivity.class);
-                startActivity(intent);
-            }
-        });
-
         return view;
+    }
+
+    public void shareFab(FloatingActionButton fab) {
+        if (fab == null) {
+            if (sharedFab != null) {
+                sharedFab.setOnClickListener(null);
+            }
+            sharedFab = null;
+        }
+        else {
+            sharedFab = fab;
+            sharedFab.setImageResource(R.drawable.ic_add_white_24dp);
+            sharedFab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent intent = new Intent(getActivity(), EventViewerActivity.class);
+                    startActivity(intent);
+                }
+            });
+        }
     }
 
     private void updateEvents() {

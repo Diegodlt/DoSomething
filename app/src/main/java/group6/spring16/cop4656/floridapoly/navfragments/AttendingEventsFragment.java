@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
@@ -55,6 +56,8 @@ public class AttendingEventsFragment extends Fragment {
     private EventRecyclerAdapter attendingAdapter;
 
     private List<Event> attendingEvents = new ArrayList<>();
+
+    private FloatingActionButton sharedFab;
 
     public AttendingEventsFragment() {
         // Required empty public constructor
@@ -115,14 +118,26 @@ public class AttendingEventsFragment extends Fragment {
         // Fetch events from the database and update the adapters
         updateEvents();
 
-        view.findViewById(R.id.new_attending_event).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ((MainScreen)getActivity()).requestDiscoverFragment();
-            }
-        });
-
         return view;
+    }
+
+    public void shareFab(FloatingActionButton fab) {
+        if (fab == null) {
+            if (sharedFab != null) {
+                sharedFab.setOnClickListener(null);
+                sharedFab = null;
+            }
+        }
+        else {
+            sharedFab = fab;
+            sharedFab.setImageResource(R.drawable.ic_search_white_24dp);
+            sharedFab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    ((MainScreen)getActivity()).requestDiscoverFragment();
+                }
+            });
+        }
     }
 
     private void updateEvents() {
