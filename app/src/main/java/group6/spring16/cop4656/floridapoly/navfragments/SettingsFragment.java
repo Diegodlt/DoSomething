@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -21,14 +22,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
@@ -38,6 +45,8 @@ import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import group6.spring16.cop4656.floridapoly.MainActivity;
@@ -54,43 +63,34 @@ import group6.spring16.cop4656.floridapoly.util.SelectPhotoDialog;
  */
 public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPhotoSelectedListener {
 
-    @Override
-    public void getImagePath(Uri imagePath) throws IOException {
-        Log.d(TAG, "getImagePath: setting the image to image view");
-        Bitmap bitmap = MediaStore.Images.Media.getBitmap(Objects.requireNonNull(getContext()).getContentResolver(), imagePath);
-        profilePicture.setImageBitmap(bitmap);
-        //assign to global variable
-        selectedImageBitmap = null;
-        selectedImageUri = imagePath;
-        uploadNewPhoto(selectedImageUri);
-    }
-
-    @Override
-    public void getImageBitmap(Bitmap bitmap) {
-        Log.d(TAG, "getImageBitmap: setting the image to image view");
-        profilePicture.setImageBitmap(bitmap);
-        //assign to a global variable
-        selectedImageUri = null;
-        selectedImageBitmap = bitmap;
-        uploadNewPhoto(selectedImageBitmap);
-    }
-
     private OnFragmentInteractionListener mListener;
 
     private static final String TAG = "SettingsFragment";
-    private static final int REQUEST_CODE = 1;
+
+    // Views
     private ImageView profilePicture;
     private TextView emailTextView;
+    private EditText userNameEditText;
+
+    // Buttons
+    private Button saveButton;
+    private Button signOutButton;
+
+    // Function global variables
     private Bitmap selectedImageBitmap;
     private Uri selectedImageUri;
-    private byte[] mUploadBytes;
+    private byte[] pictureBytes;
+    private String userValue;
     private double mProgress = 0;
+    private static final int REQUEST_CODE = 1;
+
+    // FireBase Global variables
     private FirebaseAuth mAuth;
-
-
-    private StorageReference userStorageRef;
+    private FirebaseFirestore db;
     private FirebaseUser userID;
+    private StorageReference userStorageRef;
     private StorageReference pictureReference;
+    private StorageReference userNameReference;
     private Uri firebaseUri;
 
     public SettingsFragment() {
@@ -114,11 +114,9 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         if (getArguments() != null) {
         }
     }
-
 
     @Override
     public View onCreateView(final @NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -126,64 +124,79 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
+
+        // FireBase
         mAuth = FirebaseAuth.getInstance();
-        userID = FirebaseAuth.getInstance().getCurrentUser();
+        db = FirebaseFirestore.getInstance();
+        userID = mAuth.getCurrentUser();
         userStorageRef = FirebaseStorage.getInstance().getReference();
+        userValue = userID.getUid();
+        pictureReference = userStorageRef.child("users/" +
+                Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid() + "/" + "profilePicture");
+        userNameReference = userStorageRef.child("users/" +
+                Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid() + "/" + "userName");
+
+
+        // Set up views
         profilePicture = view.findViewById(R.id.profilePicture);
         emailTextView = view.findViewById(R.id.emailTextView);
+        userNameEditText = view.findViewById(R.id.userNameEditText);
+
+        // Buttons
+        signOutButton = view.findViewById(R.id.signOutButton);
+        saveButton = view.findViewById(R.id.saveButton);
+
+        // Set view values
         emailTextView.setText(userID.getEmail());
-        Button signOutButton = view.findViewById(R.id.signOutButton);
+        emailTextView.setTextColor(Color.WHITE);
+
+        try {
+            Log.e(TAG, "Setting user profile picture");
+            downloadUserInfo();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Buttons on click listeners
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e(TAG, "Save button pressed");
+                String userName = userNameEditText.getText().toString().trim();
+                if (userName.isEmpty()){
+                    Toast.makeText(getContext(),"Please enter a user name", Toast.LENGTH_SHORT).show();
+                } else {
+                    Map<String, Object> userNameEdit = new HashMap<>();
+                    userNameEdit.put("User Name", userName);
+                    db.collection("users").document(userValue).set(userNameEdit,
+                            SetOptions.merge());
+                    Toast.makeText(getContext(), "User name updated", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
         signOutButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Log.e(TAG, "Sign out button pressed");
                 mAuth.signOut();
                 Intent mainScreen = new Intent(getActivity(), MainActivity.class);
                 startActivity(mainScreen);
             }
         });
 
-        try {
-            downloadImage();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        init();
+        // Set profile picture updater click listener
+        profilePicture.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e(TAG, "Profile picture clicked to update");
+                verifyPermissions();
+            }
+        });
 
         return view;
     }
 
-    public void downloadImage() throws IOException {
-
-        pictureReference = userStorageRef.child("users/" +
-                Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid() + "/" + "profilePicture");
-        final File userImage = File.createTempFile("image", "jpg");
-
-        pictureReference.getFile(userImage).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-
-                String userImagePath = userImage.getPath();
-                Bitmap userImageBitmap = BitmapFactory.decodeFile(userImagePath);
-                profilePicture.setImageBitmap(userImageBitmap);
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.i("downloadImage", "No image found");
-            }
-        });
-    }
-
-    private void init() {
-        profilePicture.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                verifyPermissions();
-            }
-        });
-    }
 
     private void verifyPermissions(){
         Log.e(TAG, "verifyPermissions: asking user for permissions");
@@ -192,24 +205,27 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.CAMERA};
 
+        // If permission are met, open dialog box
         if(ContextCompat.checkSelfPermission(Objects.requireNonNull(this.getActivity()).getApplicationContext(),
                 permissions[0]) == PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(this.getActivity().getApplicationContext(),
                 permissions[1]) == PackageManager.PERMISSION_GRANTED
                 && ContextCompat.checkSelfPermission(this.getActivity().getApplicationContext(),
                 permissions[2]) == PackageManager.PERMISSION_GRANTED){
-                    myDialogBox();
+            myDialogBox();
         }else{
             ActivityCompat.requestPermissions(this.getActivity(), permissions,REQUEST_CODE);
             verifyPermissions();
         }
     }
 
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         verifyPermissions();
     }
+
 
     private void myDialogBox(){
         Log.e(TAG,"myDialogBox: Opening dialog box");
@@ -219,6 +235,29 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
         dialog.setTargetFragment(SettingsFragment.this, 1);
     }
 
+
+    // Functions to catch the result from dialog box
+    @Override
+    public void getImagePath(Uri imagePath) throws IOException {
+        Log.d(TAG, "getImagePath: setting the image to image view");
+        Bitmap bitmap = MediaStore.Images.Media.getBitmap(Objects.requireNonNull(getContext()).getContentResolver(), imagePath);
+        profilePicture.setImageBitmap(bitmap);
+        //assign to global variable
+        selectedImageBitmap = null;
+        selectedImageUri = imagePath;
+        uploadNewPhoto(selectedImageUri);
+    }
+    @Override
+    public void getImageBitmap(Bitmap bitmap) {
+        Log.d(TAG, "getImageBitmap: setting the image to image view");
+        profilePicture.setImageBitmap(bitmap);
+        //assign to a global variable
+        selectedImageUri = null;
+        selectedImageBitmap = bitmap;
+        uploadNewPhoto(selectedImageBitmap);
+    }
+
+
     private void uploadNewPhoto(Bitmap bitmap){
         Log.d(TAG, "uploadNewPhoto: uploading a new image bitmap to storage");
         BackgroundImageResize resize = new BackgroundImageResize(bitmap);
@@ -226,11 +265,13 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
         resize.execute(uri);
     }
 
+
     private void uploadNewPhoto(Uri imagePath){
         Log.d(TAG, "uploadNewPhoto: uploading a new image uri to storage.");
         BackgroundImageResize resize = new BackgroundImageResize(null);
         resize.execute(imagePath);
     }
+
 
     @SuppressLint("StaticFieldLeak")
     public class BackgroundImageResize extends AsyncTask<Uri, Integer, byte[]>{
@@ -250,7 +291,8 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
             Log.d(TAG, "doInBackground: started.");
             if(mBitmap == null){
                 try{
-                    mBitmap = MediaStore.Images.Media.getBitmap(Objects.requireNonNull(getActivity()).getContentResolver(), params[0]);
+                    mBitmap = MediaStore.Images.Media.getBitmap(Objects.requireNonNull(getActivity()).getContentResolver(),
+                            params[0]);
                 }catch (IOException e){
                     Log.e(TAG, "doInBackground: IOException: " + e.getMessage());
                 }
@@ -260,53 +302,87 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
         @Override
         protected void onPostExecute(byte[] bytes) {
             super.onPostExecute(bytes);
-            mUploadBytes = bytes;
-            //execute the upload task
-            executeUploadTask();
+            pictureBytes = bytes;
+            String picture = "picture";
+            executeUploadTask(picture);
         }
     }
 
+
     // Method to perform image upload
-    private void executeUploadTask(){
-        final StorageReference storageReference = FirebaseStorage.getInstance().getReference().child("users/" +
-                Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid() + "/" + "profilePicture");
+    private void executeUploadTask(String file){
 
-        UploadTask uploadTask = storageReference.putBytes(mUploadBytes);
-        uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                Toast.makeText(getActivity(), "Profile picture updated!", Toast.LENGTH_SHORT).show();
+            UploadTask uploadPicture = pictureReference.putBytes(pictureBytes);
+            uploadPicture.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    Toast.makeText(getActivity(), "Profile picture updated!", Toast.LENGTH_SHORT).show();
 
-                //insert the download URL into the firebase database
-                userStorageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        firebaseUri = uri;
+                    //insert the download URL into the FireBase database
+                    userStorageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            firebaseUri = uri;
+                        }
+                    });
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(getActivity(), "Could not upload photo", Toast.LENGTH_SHORT).show();
+                }
+            }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                    double currentProgress = (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                    if (currentProgress > (mProgress + 15)) {
+                        mProgress = (100 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                        Toast.makeText(getActivity(), mProgress + "%", Toast.LENGTH_SHORT).show();
                     }
-                });
+                }
+            });
+    }
+
+
+    // Method to convert the Bitmap picture to an array of bytes
+    private static byte[] getBytesFromBitmap(Bitmap bitmap){
+        ByteArrayOutputStream imageStream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100,imageStream);
+        return imageStream.toByteArray();
+    }
+
+
+    public void downloadUserInfo() throws IOException {
+        final File userImage = File.createTempFile("image", "jpg");
+        pictureReference.getFile(userImage).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+
+                String userImagePath = userImage.getPath();
+                Bitmap userImageBitmap = BitmapFactory.decodeFile(userImagePath);
+                profilePicture.setImageBitmap(userImageBitmap);
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getActivity(),"could not upload photo", Toast.LENGTH_SHORT).show();
-            }
-        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                double currentProgress = (100 * taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                if (currentProgress > (mProgress+15)){
-                    mProgress = (100 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
-                    Toast.makeText(getActivity(), mProgress + "%", Toast.LENGTH_SHORT).show();
-                }
+                Log.i("downloadImage", "No image found");
             }
         });
-    }
 
-    // Method to convert the Bitmap picture to an array of bytes
-    private static byte[] getBytesFromBitmap(Bitmap bitmap){
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100,stream);
-        return stream.toByteArray();
+        db.collection("users").document(userValue).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                DocumentSnapshot document = task.getResult();
+                String userName = document.getString("User Name");
+                userNameEditText.setText(userName);
+                userNameEditText.setTextColor(Color.WHITE);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+
+            }
+        });
     }
 
 
