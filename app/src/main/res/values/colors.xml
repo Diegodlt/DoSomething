@@ -5,5 +5,6 @@
     <color name="colorPrimaryDark">@color/quantum_bluegrey800</color>
     <color name="colorAccent">#FAAB1A</color>
     <color name="colorSettings">#A8A8A8</color>
+    <color name="colorRoundedButton">#00FFFFFF</color>
 
 </resources>
