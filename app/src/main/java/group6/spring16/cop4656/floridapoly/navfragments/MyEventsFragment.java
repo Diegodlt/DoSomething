@@ -1,58 +1,36 @@
 package group6.spring16.cop4656.floridapoly.navfragments;
 
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.card.MaterialCardView;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.Continuation;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
-
-import group6.spring16.cop4656.floridapoly.EventRecyclerAdapter;
-import group6.spring16.cop4656.floridapoly.EventRecyclerTouchListener;
-import group6.spring16.cop4656.floridapoly.MainActivity;
-import group6.spring16.cop4656.floridapoly.MainScreen;
 import group6.spring16.cop4656.floridapoly.R;
-import group6.spring16.cop4656.floridapoly.event.Event;
-import group6.spring16.cop4656.floridapoly.event.EventViewerActivity;
 
 
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link HomeFragment.OnFragmentInteractionListener} interface
+ * {@link MyEventsFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link HomeFragment#newInstance} factory method to
+ * Use the {@link MyEventsFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class HomeFragment extends Fragment {
+public class MyEventsFragment extends Fragment {
 
     private OnFragmentInteractionListener mListener;
 
@@ -62,12 +40,12 @@ public class HomeFragment extends Fragment {
     private FirebaseUser mUser;
     private TextView username;
 
-    public HomeFragment() {
+    public MyEventsFragment() {
         // Required empty public constructor
     }
 
-    public static HomeFragment newInstance() {
-        return new HomeFragment();
+    public static MyEventsFragment newInstance() {
+        return new MyEventsFragment();
     }
 
     @Override
@@ -81,7 +59,7 @@ public class HomeFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
+        View view = inflater.inflate(R.layout.fragment_my_events, container, false);
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -94,8 +72,8 @@ public class HomeFragment extends Fragment {
         }
 
         // Create the tab bar and view pager
-        TabLayout tabLayout = view.findViewById(R.id.home_tab_bar);
-        ViewPager viewPager = view.findViewById(R.id.home_tab_view_pager);
+        TabLayout tabLayout = view.findViewById(R.id.my_events_tab_bar);
+        ViewPager viewPager = view.findViewById(R.id.my_events_view_pager);
 
         viewPager.setAdapter(new EventPagerAdapter(getChildFragmentManager()));
         tabLayout.setupWithViewPager(viewPager);

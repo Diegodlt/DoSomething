@@ -12,12 +12,12 @@ import android.view.MenuItem;
 
 import group6.spring16.cop4656.floridapoly.navfragments.AttendingEventsFragment;
 import group6.spring16.cop4656.floridapoly.navfragments.DiscoverFragment;
-import group6.spring16.cop4656.floridapoly.navfragments.HomeFragment;
+import group6.spring16.cop4656.floridapoly.navfragments.MyEventsFragment;
 import group6.spring16.cop4656.floridapoly.navfragments.HostingEventsFragment;
 import group6.spring16.cop4656.floridapoly.navfragments.SettingsFragment;
 
 public class MainScreen extends AppCompatActivity
-    implements HomeFragment.OnFragmentInteractionListener,
+    implements MyEventsFragment.OnFragmentInteractionListener,
                HostingEventsFragment.OnFragmentInteractionListener,
                AttendingEventsFragment.OnFragmentInteractionListener,
                DiscoverFragment.OnFragmentInteractionListener,
@@ -46,7 +46,7 @@ public class MainScreen extends AppCompatActivity
                 }
 
                 switch (menuItem.getItemId()) {
-                    case R.id.nav_item_home_screen:
+                    case R.id.nav_item_my_events:
                         startHomeScreenFragment();
                         return true;
 
@@ -72,7 +72,7 @@ public class MainScreen extends AppCompatActivity
     }
 
     public void requestHomeScreenFragment() {
-        navBar.setSelectedItemId(R.id.nav_item_home_screen);
+        navBar.setSelectedItemId(R.id.nav_item_my_events);
     }
 
     public void requestDiscoverFragment() {
@@ -84,7 +84,7 @@ public class MainScreen extends AppCompatActivity
     }
 
     private void startHomeScreenFragment() {
-        HomeFragment frag = HomeFragment.newInstance();
+        MyEventsFragment frag = MyEventsFragment.newInstance();
         openTab(frag);
     }
 
