@@ -96,6 +96,13 @@ public class MyEventsFragment extends Fragment {
 
             @Override
             public void onPageSelected(int i) {
+                switch (i) {
+                    case 0:
+                        adapter.hostingFrag.shareFab(eventsFab);
+                        eventsFab.show();
+                    default:
+                        eventsFab.hide();
+                }
             }
 
             @Override
@@ -106,17 +113,13 @@ public class MyEventsFragment extends Fragment {
                 else if (i == ViewPager.SCROLL_STATE_IDLE) {
                     switch (viewPager.getCurrentItem()) {
                         case 0:
-                            adapter.attendingFrag.shareFab(null);
                             adapter.hostingFrag.shareFab(eventsFab);
+                            eventsFab.show();
                             break;
-                        case 1:
                         default:
                             adapter.hostingFrag.shareFab(null);
-                            adapter.attendingFrag.shareFab(eventsFab);
                             break;
                     }
-
-                    eventsFab.show();
                 }
             }
         });
