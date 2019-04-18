@@ -261,6 +261,7 @@ public class EventViewerActivity extends AppCompatActivity implements OnMapReady
 
         ((ImageView)descriptionView.findViewById(R.id.icon)).setImageResource(R.drawable.ic_comment_black_24dp);
         descriptionTitle.setText(R.string.event_description);
+        descriptionContent.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE);
 
         descriptionContent.addTextChangedListener(new TextWatcher() {
             @Override
