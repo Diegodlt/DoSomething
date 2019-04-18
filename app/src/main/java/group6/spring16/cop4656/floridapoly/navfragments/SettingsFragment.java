@@ -69,12 +69,7 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
 
     // Views
     private ImageView profilePicture;
-    private TextView emailTextView;
     private EditText userNameEditText;
-
-    // Buttons
-    private Button saveButton;
-    private Button signOutButton;
 
     // Function global variables
     private Bitmap selectedImageBitmap;
@@ -87,11 +82,8 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
     // FireBase Global variables
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
-    private FirebaseUser userID;
     private StorageReference userStorageRef;
     private StorageReference pictureReference;
-    private StorageReference userNameReference;
-    private Uri firebaseUri;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -128,23 +120,22 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
         // FireBase
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
-        userID = mAuth.getCurrentUser();
+        FirebaseUser userID = mAuth.getCurrentUser();
         userStorageRef = FirebaseStorage.getInstance().getReference();
+        assert userID != null;
         userValue = userID.getUid();
         pictureReference = userStorageRef.child("users/" +
                 Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid() + "/" + "profilePicture");
-        userNameReference = userStorageRef.child("users/" +
-                Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid() + "/" + "userName");
-
 
         // Set up views
         profilePicture = view.findViewById(R.id.profilePicture);
-        emailTextView = view.findViewById(R.id.emailTextView);
+        TextView emailTextView = view.findViewById(R.id.emailTextView);
         userNameEditText = view.findViewById(R.id.userNameEditText);
 
         // Buttons
-        signOutButton = view.findViewById(R.id.signOutButton);
-        saveButton = view.findViewById(R.id.saveButton);
+        Button signOutButton = view.findViewById(R.id.signOutButton);
+        // Buttons
+        Button saveButton = view.findViewById(R.id.saveButton);
 
         // Set view values
         emailTextView.setText(userID.getEmail());
@@ -322,7 +313,6 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
                     userStorageRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
                         public void onSuccess(Uri uri) {
-                            firebaseUri = uri;
                         }
                     });
                 }
@@ -365,7 +355,7 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                Log.i("downloadImage", "No image found");
+                Log.i("DownloadImage", "No image found");
             }
         });
 
@@ -373,6 +363,7 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                 DocumentSnapshot document = task.getResult();
+                assert document != null;
                 String userName = document.getString("User Name");
                 userNameEditText.setText(userName);
                 userNameEditText.setTextColor(Color.BLACK);
@@ -380,7 +371,7 @@ public class SettingsFragment extends Fragment implements SelectPhotoDialog.OnPh
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-
+                Log.i("Download user id", "No user id found");
             }
         });
     }
