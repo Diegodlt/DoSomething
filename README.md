@@ -1,26 +1,15 @@
 # DoSomething
 
-App that allows a user to create and find one time events in his or her area. A user has the ability to put restrictions on the events such as age requirement. 
+App that allows a user to create and find one time events in his or her area. A user has the ability edit their event and put restrictions on their events such as the maximum amount of attendees, and location.  
 
 ### Welcome Screen Page
-- id/imageView2 - Logo
-- id/loginButton - Login to account
-- id/signUpButton - Create new account
+Gives the user the option to either signup or login.
 
-### Login Screen Page
-- id/email - User enters email as username
-- id/password - User enters their password
-- id/loginButton - Login to account
+### Main Menu 
+Displays access to the events the user is Hosting or Attending and a bottom navigation bar to Discover events and edit User Settings.
 
-### Create Account Page
-- id/firstName
-- id/lastName
-- id/email
-- id/password
-- id/signUpButton
+### Discover Tab
+Shows nearby events and allows the user to select range and search for events by markers on the map.
 
-### Home Screen Page
-- id/title - Do Something title
-- id/username - Username displayed
-- id/signOutButton - Sign Out of account
-
+### Settings Tab
+Allows user to edit various settings such as their username and profile picture and to sign-out of their account.
