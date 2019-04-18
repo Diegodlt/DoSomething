@@ -150,7 +150,7 @@ public class DiscoverFragment extends Fragment implements
 
     private void addEventMarker(@NonNull Event event) {
         MarkerOptions opt = new MarkerOptions();
-        opt.title(event.getTitle());
+        opt.title(event.title);
         opt.position(event.location());
 
         Marker mark = map.addMarker(opt);

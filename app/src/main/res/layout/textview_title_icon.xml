@@ -30,14 +30,20 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="4dp"
                 android:text="Title"
-                android:textAppearance="@android:style/TextAppearance.Medium" />
+                android:textAppearance="@android:style/TextAppearance.Medium"
+                android:focusable="false"
+                android:clickable="false" />
 
-            <TextView
+            <EditText
                 android:id="@+id/content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@android:color/transparent"
+                android:inputType="text"
                 android:text="Content"
-                android:textAppearance="@android:style/TextAppearance.Small" />
+                android:textAppearance="@android:style/TextAppearance.Small"
+                android:clickable="false"
+                android:focusable="false" />
         </LinearLayout>
 
 </LinearLayout>

@@ -6,18 +6,16 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 
 public class Event implements Serializable {
-    public String eventId;
+    public String eventId = UUID.randomUUID().toString();
     public String hostId;
 
     public String title;
-    public Date   dateTime;
+    public Date   date = new Date(0L);
     public String description;
     public int    maxAttendees;
 
@@ -32,87 +30,58 @@ public class Event implements Serializable {
 
     }
 
-    public Event(String eventId, String hostId, String title, Date dateTime, LatLng location, int maxAttendees) {
-        this.title = title;
-        this.dateTime = dateTime;
-        this.latitude = location.latitude;
-        this.longitude = location.longitude;
+    public Event(String hostId, String title, Date date, LatLng location, int maxAttendees) {
+        this.title        = title;
+        this.date         = date;
+        this.latitude     = location.latitude;
+        this.longitude    = location.longitude;
         this.maxAttendees = maxAttendees;
-        this.eventId = eventId;
-        this.hostId = hostId;
+        this.hostId       = hostId;
     }
 
-    public Event(String eventId, String hostId, String title, Date dateTime, LatLng location, int maxAttendees, String description) {
-        this(eventId, hostId, title, dateTime, location, maxAttendees);
+    public Event(String hostId, String title, Date date, LatLng location, int maxAttendees, String description) {
+        this(hostId, title, date, location, maxAttendees);
         this.description = description;
     }
 
-    public String getEventId() {
-        return eventId;
+    public void day(Date date) {
+        Calendar current = Calendar.getInstance();
+        Calendar modify = Calendar.getInstance();
+
+        current.setTime(this.date);
+        modify.setTime(date);
+
+        current.set(Calendar.DAY_OF_MONTH, modify.get(Calendar.DAY_OF_MONTH));
+        current.set(Calendar.MONTH, modify.get(Calendar.MONTH));
+        current.set(Calendar.YEAR, modify.get(Calendar.YEAR));
+
+        this.date = current.getTime();
     }
 
-    public String getHostId() {
-        return hostId;
-    }
+    public void time(Date date) {
+        Calendar current = Calendar.getInstance();
+        Calendar modify = Calendar.getInstance();
 
-    public String getTitle() {
-        return title;
-    }
+        current.setTime(this.date);
+        modify.setTime(date);
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+        current.set(Calendar.HOUR_OF_DAY, modify.get(Calendar.HOUR_OF_DAY));
+        current.set(Calendar.MINUTE, modify.get(Calendar.MINUTE));
 
-    public Date getDate() {
-        return dateTime;
-    }
-
-    public void setDate(Date date) {
-        dateTime = date;
+        this.date = current.getTime();
     }
 
     public LatLng location() {
         return new LatLng(latitude, longitude);
     }
 
-    public double getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(double lat) {
-        latitude = lat;
-    }
-
-    public double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(double lon) {
-        longitude = lon;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public int getMaxAttendees() {
-        return maxAttendees;
-    }
-
-    public void setMaxAttendees(int maxAttendees) {
-        this.maxAttendees = maxAttendees;
+    public void location(LatLng location) {
+        latitude = location.latitude;
+        longitude = location.longitude;
     }
 
     public boolean isUserAttending(String userId) {
         return attendees.contains(userId);
-    }
-
-    public void setAttendees(List<String> users) {
-        this.attendees = users;
     }
 
     public void addAttendee(String user) {

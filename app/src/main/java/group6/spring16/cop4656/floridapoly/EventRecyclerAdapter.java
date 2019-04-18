@@ -1,8 +1,6 @@
 package group6.spring16.cop4656.floridapoly;
 
 import android.support.annotation.NonNull;
-import android.support.v7.recyclerview.extensions.ListAdapter;
-import android.support.v7.util.DiffUtil;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -37,13 +35,13 @@ public class EventRecyclerAdapter extends RecyclerView.Adapter<EventRecyclerAdap
         Log.d("Adapter", "Bind (size: " + getItemCount() + ")");
         final Event event = events.get(position);
 
-        holder.titleView.setText(event.getTitle());
+        holder.titleView.setText(event.title);
 
         final SimpleDateFormat dateFmt = new SimpleDateFormat("EEEE, MMMM d, yyyy", Locale.getDefault());
         final SimpleDateFormat timeFmt = new SimpleDateFormat("h:mm a", Locale.getDefault());
 
-        holder.dateView.setText(dateFmt.format(event.getDate()));
-        holder.timeView.setText(timeFmt.format(event.getDate()));
+        holder.dateView.setText(dateFmt.format(event.date));
+        holder.timeView.setText(timeFmt.format(event.date));
     }
 
     @Override

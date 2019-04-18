@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="colorPrimary">#00FFFFFF</color> <!-- NOTE: FULL ALPHA CHANNEL (OPACITY 0%)-->
-    <color name="colorPrimaryDark">#585858</color>
-    <color name="colorAccent">#6EFFFFFF</color>
+    <color name="colorPrimary">@color/quantum_bluegrey700</color>
+    <color name="colorPrimaryDark">@color/quantum_bluegrey800</color>
+    <color name="colorAccent">#FAAB1A</color>
     <color name="colorSettings">#A8A8A8</color>
-
+    <color name="colorRoundedButton">#00FFFFFF</color>
 
 </resources>

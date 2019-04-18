@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".event.EventViewerActivity">
+    tools:context=".event.EventViewerActivity"
+    android:animateLayoutChanges="true">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/event_viewer_toolbar"
@@ -13,7 +14,19 @@
         android:background="?attr/colorPrimary"
         android:elevation="4dp"
         android:theme="@style/ActionBarTheme"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <EditText
+            android:id="@+id/event_viewer_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="text"
+            android:focusable="false"
+            android:clickable="false"
+            android:textAppearance="@android:style/TextAppearance.Material.Title"
+            android:textColorHint="@color/quantum_grey300"/>
+    </android.support.v7.widget.Toolbar>
 
     <LinearLayout
         android:id="@+id/event_viewer_details_layout"
@@ -59,5 +72,18 @@
         android:layout_width="match_parent"
         android:layout_height="200dp"
         app:layout_constraintBottom_toBottomOf="parent"/>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/event_viewer_location_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="12dp"
+        android:layout_marginBottom="12dp"
+        android:clickable="true"
+        android:visibility="invisible"
+        app:backgroundTintMode="src_over"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:srcCompat="@drawable/ic_my_location_white_24dp" />
 
 </android.support.constraint.ConstraintLayout>

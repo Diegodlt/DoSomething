@@ -3,7 +3,7 @@
 
     <!--Activity/Fragment Title strings-->
     <string name="title_activity_login_">Login_Activity</string>
-    <string name="home_title">Home</string>
+    <string name="my_events_title">My Events</string>
     <string name="discover_title">Discover</string>
     <string name="event_creator_title">Event Creator</string>
     <string name="settings_title">Settings</string>
@@ -40,8 +40,9 @@
     <string name="choose_photo_from_memory">Choose photo from memory</string>
     <string name="take_a_photo">Take a Photo</string>
 
-    <string name="google_cloud_api_key">AIzaSyATXM-uJNwJ1KukaZy3AQ_aAKC2NE1kSYc</string>
-
     <string name="save_changes">Save Changes</string>
     <string name="enter_username">Enter Username</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
