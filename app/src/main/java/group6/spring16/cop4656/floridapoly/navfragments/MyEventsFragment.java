@@ -239,7 +239,7 @@ public class MyEventsFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
-    public class EventPagerAdapter extends FragmentPagerAdapter {
+    private class EventPagerAdapter extends FragmentPagerAdapter {
         public HostingEventsFragment hostingFrag = HostingEventsFragment.newInstance();
         public AttendingEventsFragment attendingFrag = AttendingEventsFragment.newInstance();
 
