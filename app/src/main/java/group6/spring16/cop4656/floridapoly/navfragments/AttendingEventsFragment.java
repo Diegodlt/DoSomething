@@ -57,8 +57,6 @@ public class AttendingEventsFragment extends Fragment {
 
     private List<Event> attendingEvents = new ArrayList<>();
 
-    private FloatingActionButton sharedFab;
-
     public AttendingEventsFragment() {
         // Required empty public constructor
     }
@@ -119,25 +117,6 @@ public class AttendingEventsFragment extends Fragment {
         updateEvents();
 
         return view;
-    }
-
-    public void shareFab(FloatingActionButton fab) {
-        if (fab == null) {
-            if (sharedFab != null) {
-                sharedFab.setOnClickListener(null);
-                sharedFab = null;
-            }
-        }
-        else {
-            sharedFab = fab;
-            sharedFab.setImageResource(R.drawable.ic_search_white_24dp);
-            sharedFab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    ((MainScreen)getActivity()).requestDiscoverFragment();
-                }
-            });
-        }
     }
 
     private void updateEvents() {

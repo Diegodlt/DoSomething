@@ -1,6 +1,9 @@
 package group6.spring16.cop4656.floridapoly.navfragments;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -10,17 +13,30 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Objects;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 import group6.spring16.cop4656.floridapoly.R;
 
 
@@ -40,7 +56,14 @@ public class MyEventsFragment extends Fragment {
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
     private FirebaseUser mUser;
+    private StorageReference userStorageRef;
+    private StorageReference pictureReference;
     private TextView username;
+    private String userValue;
+
+    // Widgets
+    private CircleImageView profilePicture;
+    private TextView userNameTextView;
 
     private FloatingActionButton eventsFab;
 
@@ -59,17 +82,33 @@ public class MyEventsFragment extends Fragment {
         }
     }
 
+    @SuppressLint("CutPasteId")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_my_events, container, false);
+        final View view = inflater.inflate(R.layout.fragment_my_events, container, false);
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
         mUser = mAuth.getCurrentUser();
+        userStorageRef = FirebaseStorage.getInstance().getReference();
+        assert mUser != null;
+        userValue = mUser.getUid();
 
-        username = view.findViewById(R.id.username);
+        pictureReference = userStorageRef.child("users/" +
+                Objects.requireNonNull(FirebaseAuth.getInstance().getCurrentUser()).getUid() + "/" + "profilePicture");
+
+        profilePicture = view.findViewById(R.id.profilePicture);
+        userNameTextView = view.findViewById(R.id.userNameTextView);
+
+        try {
+            downloadUserInfo();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        username = view.findViewById(R.id.userNameTextView);
 
         if (mUser != null) {
             username.setText(mUser.getEmail());
@@ -88,6 +127,7 @@ public class MyEventsFragment extends Fragment {
         tabLayout.setupWithViewPager(viewPager);
 
         // Add a page change listener for changing the events FAB
+        adapter.hostingFrag.shareFab(eventsFab);
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int i, float v, int i1) {
@@ -95,6 +135,13 @@ public class MyEventsFragment extends Fragment {
 
             @Override
             public void onPageSelected(int i) {
+                switch (i) {
+                    case 0:
+                        adapter.hostingFrag.shareFab(eventsFab);
+                        eventsFab.show();
+                    default:
+                        eventsFab.hide();
+                }
             }
 
             @Override
@@ -105,22 +152,52 @@ public class MyEventsFragment extends Fragment {
                 else if (i == ViewPager.SCROLL_STATE_IDLE) {
                     switch (viewPager.getCurrentItem()) {
                         case 0:
-                            adapter.attendingFrag.shareFab(null);
                             adapter.hostingFrag.shareFab(eventsFab);
+                            eventsFab.show();
                             break;
-                        case 1:
                         default:
                             adapter.hostingFrag.shareFab(null);
-                            adapter.attendingFrag.shareFab(eventsFab);
                             break;
                     }
-
-                    eventsFab.show();
                 }
             }
         });
 
         return view;
+    }
+
+    public void downloadUserInfo() throws IOException {
+        final File userImage = File.createTempFile("image", "jpg");
+        pictureReference.getFile(userImage).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+            @Override
+            public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+
+                String userImagePath = userImage.getPath();
+                Bitmap userImageBitmap = BitmapFactory.decodeFile(userImagePath);
+                profilePicture.setImageBitmap(userImageBitmap);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.i("DownloadImage", "No image found");
+            }
+        });
+
+        db.collection("users").document(userValue).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                DocumentSnapshot document = task.getResult();
+                assert document != null;
+                String userName = document.getString("User Name");
+                userNameTextView.setText(userName);
+                userNameTextView.setVisibility(View.VISIBLE);
+            }
+        }).addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+                Log.i("Download user id", "No user id found");
+            }
+        });
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -162,7 +239,7 @@ public class MyEventsFragment extends Fragment {
         void onFragmentInteraction(Uri uri);
     }
 
-    public class EventPagerAdapter extends FragmentPagerAdapter {
+    private class EventPagerAdapter extends FragmentPagerAdapter {
         public HostingEventsFragment hostingFrag = HostingEventsFragment.newInstance();
         public AttendingEventsFragment attendingFrag = AttendingEventsFragment.newInstance();
 

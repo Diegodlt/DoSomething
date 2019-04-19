@@ -17,7 +17,8 @@
         <android.support.design.widget.TabLayout
             android:id="@+id/my_events_tab_bar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:elevation="4dp">
 
             <android.support.design.widget.TabItem
                 android:layout_width="wrap_content"
@@ -30,32 +31,56 @@
                 android:text="Attending" />
         </android.support.design.widget.TabLayout>
 
-        <TextView
-            android:id="@+id/title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:text="@string/app_name"
-            android:textSize="30sp" />
-
-        <TextView
-            android:id="@+id/username"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@+id/title"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="8dp"
-            android:text="@string/hint_username" />
-
-        <android.support.v4.view.ViewPager
-            android:id="@+id/my_events_view_pager"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
+            android:orientation="horizontal"
+            android:weightSum="100">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/profilePicture"
+                android:layout_width="0dp"
+                android:layout_height="99dp"
+                android:layout_marginStart="15dp"
+                android:layout_marginTop="5dp"
+                android:layout_weight="30"
+                android:src="@mipmap/ic_launcher"
+                app:civ_border_color="#FF000000"
+                app:civ_border_width="2dp"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="60"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/app_name"
+                    android:textSize="30sp" />
+
+                <TextView
+                    android:id="@+id/userNameTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Sample"
+                    android:textSize="27sp"
+                    android:visibility="invisible"
+                    tools:visibility="invisible" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/my_events_view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
     </LinearLayout>
 
 
